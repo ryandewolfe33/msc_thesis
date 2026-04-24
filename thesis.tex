@@ -211,22 +211,49 @@
 
 \begin{document}
 \chapter{Introduction}
-\section{Community Detection}
-\section{Evaluating a Community Detection Algorithm}
-\section{Contributions}
+
+Clustering -- or in the context of graph data, community detection -- is one of the fundamental problems in unsupervised machine learning \cite{clusteringhandbook}.
+A clustering algorithm finds subsets of the data that intuitively ``belong together'', a notoriously ill-defined idea that is widely used for preprocessing, exploration, and prediction \rc{citations}.
+For graph data, the typical idea of a good community is a subset of the vertices that are densely connected to each other while sparsely connected to the rest of the graph.
+There have been a variety of attempts to exactly define a community, or score the quality of a community, and an even more algorithms to detect the various definitions of community \cite{fortunatoreview}.
+
+The most popular and well studied ideas of community focus on partitions \cite{modularity,louvain,lfr}, a clustering where every vertex belongs to exactly one cluster.
+However, especially in graph data, partitions are not always sufficient to describe the intuitive clusters (Figure \ref{fig:overlap_ex}).
+In particular, we extend the notion of a clustering to allow for outliers (vertices may belong to no clusters) and overlaps (vertices may belong to multiple communities).
+There are some community detection algorithms for this regime \cite{oslom,hslc}, but the tools for evaluating and comparing these algorithms are under developed.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{figures/overlap_ex.pdf}
+    \caption{An example of a graph with an intuitive clustering (represented by vertex colour) with overlap and an outlier (the center grey vertex).}
+    \label{fig:overlap_ex}
+\end{figure}
+
+In this thesis, we develop tools for the extrinsic benchmarking of community detection algorithms that allow for outliers and overlaps.
+An extrinsic benchmark evaluates the ability of a community detection algorithm to find a ground truth clustering that is believed to be correct.
+The first component to an extrinsic benchmark is the data.
+In real networks, the ground truth clustering is often determined from meta-data that is suspected to produce communities but is not given to the detection algorithm \cite{snap}.
+However, creating these ground truth clustering is difficult, and it is not always clear that the ground truth communities actually exist in the data \cite{yang2012defining}.
+Thus, we use synthetic data that is generated with a known community structure \cite{lfr,lfro,abcd,abcdo}.
+In Chapter \ref{chap:abcdoo}, we propose \abcdoo, an extension of the Artificial Benchmark for Community Detection with Outliers (\abcdo) model to allow for overlapping communities. 
+The second component is a method to compare the similarity of the detected clustering to the ground truth clustering.
+Many methods exist for partitions \cite{ari,nmi,ami}, and some have extended for overlaps \cite{omega,onmi,ecc}, but to the best of our knowledge none have explicitly considered outliers.
+Chapter \ref{chap:fstar} develops a new method based on a set-matching framework \cite{setmatching} that includes a novel outlier comparison term.
+Finally, in Chapter \ref{chap:benchmark}, we use these tools to benchmark three community detection algorithms.
+
 The bulk of this thesis is based on results from the following papers:
 \begin{itemize}
-    \item ``The Artificial Benchmark for Community Detection with Outliers and Overlapping Communities ({ABCD}+o$^2$)'' \cite{abcdoo_paper} has been accepted for publication in the Journal of Complex Networks. A preliminary version \cite{abcdoo_conference} was also published in the proceedings of WAW 2025. The authors contributed equally to the results.
+    \item ``The Artificial Benchmark for Community Detection with Outliers and Overlapping Communities ({ABCD}+o$^2$)'' \cite{abcdoo_paper} has been accepted for publication in the Journal of Complex Networks. A preliminary version \cite{abcdoo_conference} was also published in the Proceedings of the 20th Workshop on Modelling and Mining Networks (WAW2025). The authors contributed equally to the results.
     \item ``A Pragmatic Method for Comparing Clusterings with Overlaps and Outliers'' \rc{is under review somewhere.} Ryan DeWolfe was the lead author, responsible for the idea, implementation, experiments, and initial draft.
 \end{itemize}
 It also uses algorithms developed during the program and presented in the following papers:
 \begin{itemize}
-    \item ``Improving Community Detection via Community Association Strength Scores'' \cite{cas} published in the proceedings of WAW 2025. The authors contributed equally to the results.
-    \item ``Hierarchical Single-Linkage Clustering for Community Detection with Overlaps and Outliers'' \cite{hslc} published in the proceedings of COMPLEX NETWORKS 2025. Ryan DeWolfe is the sole author.
+    \item ``Improving Community Detection via Community Association Strength Scores'' \cite{cas} published in the Proceedings of the 20th Workshop on Modelling and Mining Networks (WAW2025). The authors contributed equally to the results.
+    \item ``Hierarchical Single-Linkage Clustering for Community Detection with Overlaps and Outliers'' \cite{hslc} published in the Proceedings of the 14th International Conference on Complex Networks and their Applications (COMPLEXNETWORKS2025). Ryan DeWolfe is the sole author.
 \end{itemize}
 Finally, written during the program but not mentioned in the thesis are the following papers:
 \begin{itemize}
-    \item ``Detecting Patterns of Interaction in Temporal Hypergraphs via Edge Clustering'' \cite{temporalhyperedgeclustering} published in the proceedings of ASONAM 2025.
+    \item ``Detecting Patterns of Interaction in Temporal Hypergraphs via Edge Clustering'' \cite{temporalhyperedgeclustering} published in the Proceedings of the 17th International Conference on Advances in Social Networks Analysis and Mining (ASONAM2025).
     \item ``Leveraging Non-linear Dimension Reduction and Random Walk Co-occurrence for Node Embedding'' \cite{cove} posted to arXiv.
 \end{itemize}
 
@@ -253,7 +280,7 @@ In \abcdoo, we instead generate overlapping communities based on a hidden, low-d
 This geometric approach to community structure is justified by the fact that latent geometric spaces are believed to shape complex networks (e.g., social media networks shaped by users' opinions, education, knowledge, interests, etc.).
 These latent spaces have been successfully employed for many years to model and explain network properties such as self-similarity~\cite{serrano2008self}, homophily and aversion~\cite{henry2011emergence}.
 For more details, we direct the reader to the survey~\cite{boguna2021network} or the book~\cite{serrano2021shortest}.
-The ancillary benefits of the \abcd\ model (an intuitive noise parameter, a fast implementation, and theoretical analysis) are still present, making the \abcdoo\ model an attractive option for benchmarking community detection algorithms.
+The ancillary benefits of the \abcd\ model (an intuitive noise parameter, a fast implementation, and theoretical analysis) are still present.
 
 \section{The Model}
 \subsection{The Big Picture}
