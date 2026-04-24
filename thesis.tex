@@ -1,6 +1,10 @@
 \PassOptionsToPackage{bookmarks={false}}{hyperref}
 \documentclass[review,los,12pt]{ryethesis}
 \usepackage{amsmath,amsfonts,amsthm,lipsum,textcomp,float,amscd,amssymb,verbatim,mathrsfs,color,bbold,amsmath,comment,graphicx,listings}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{color}
+\usepackage[table]{xcolor}
 \usepackage[normalem]{ulem}
 \useunder{\uline}{\ul}{}
 
@@ -15,11 +19,8 @@
 % \fancyhead[LE]{\leftmark}
 \fancyfoot[C]{\thepage}
 
-
 \definecolor{mygreen}{RGB}{28,172,0} % color values Red, Green, Blue
 \definecolor{mylilas}{RGB}{170,55,241}
-
-
 
 \newtheorem{theorem}{Theorem}
 \newtheorem{corollary}[theorem]{Corollary}
@@ -122,7 +123,38 @@
 \newcommand{\W}{{\textbf W}}
 \def\one{\mathbb 1}
 
+%%%%%%%% Custom Commands %%%%%%%%
+\newcommand{\abcd}{{ABCD}}
+\newcommand{\abcdo}{{ABCD+o}}
+\newcommand{\abcdoo}{{ABCD+o$^2$}}
 
+\newcommand{\lfr}{{LFR}}
+
+\newcommand{\round}[1]{\ensuremath{\left\lfloor #1 \right\rceil}}
+\newcommand{\tpl}[3]{\ensuremath{\mathcal{P}\left(#1,#2,#3\right)}}
+
+\newcommand\cCone{\mathcal{C}^{(1)}}
+\newcommand\tcCone{\tilde{\mathcal{C}}^{(1)}}
+\newcommand\hcCone{\hat{\mathcal{C}}^{(1)}}
+\newcommand\cCtwo{\mathcal{C}^{(2)}}
+\newcommand\cCthree{\mathcal{C}^{(3)}}
+\newcommand\cE{\mathcal E}
+\newcommand{\bigO}{\mathcal{O}}
+
+\newcommand{\vol}[1]{\ensuremath{\mathrm{vol}\left(#1\right)}}
+\newcommand{\ER}{Erd\H{o}s-R\'e{}nyi }
+\newcommand{\score}[1]{\ensuremath{\mathrm{CAS}\left(#1\right)}}
+\newcommand{\scorelabel}{\ensuremath{\mathrm{CAS}}}
+\newcommand{\threshold}{\ensuremath{\lambda^*}}
+
+
+%%%%%%%% Author Comments %%%%%%%%
+\newcommand{\pc}[1]{{\color{red}{\bf [~Pawel:\ } \color{red}{\em #1}\color{red}{\bf~]}}}
+\newcommand{\pt}[1]{\textcolor{red}{#1}}
+
+\definecolor{purple}{rgb}{0.5, 0.1, 0.9}
+\newcommand{\rc}[1]{{\color{purple}{\bf [~RD:} \color{purple}{\em #1}\color{purple}{\bf~]}}}
+\newcommand{\rd}[1]{{\color{purple} \color{purple}{#1}\color{purple}{\bf}}}
 
 
 
@@ -146,7 +178,7 @@
 
 \author{Ryan DeWolfe}
 
-\title{Community Detection with Overlaps and Outliers}
+\title{Benchmarking Community Detection Algorithms with Overlaps and Outliers}
 
 \degreeName{Master of Science (M.Sc.)}
 
@@ -156,10 +188,12 @@
 
 \prevDegreeA{Bachelor of Science}{The University of British Columbia}{2024} % for example \prevDegreeA{Bachelor of Science}{Ryerson University}{2013}
 
-
-
 \abstract{
-Maximum of 150 words for a MSc thesis.
+    Clustering (or community detection) is one of the fundamental problems in unsupervised machine learning.
+    For graph data, community detection algorithms look for subsets of vertices that are densely connected to each other and sparsely connected to the rest of the graph.
+    The most popular community detection algorithms tend to insist each vertex belong to exactly one community, although recent extensions allow for overlaps (vertices belonging to multiple communities) and outliers (vertices belonging to no communities).
+    This thesis develops tools for extrinsic benchmarking of community detection algorithms that with overlaps and outliers; first we propose an extension of the Artificial Benchmark for Community Detection to create synthetic graphs with known community structure, then we propose a clustering similarity measure that can explicitly handle overlaps and outliers.
+    We conclude with an example of using the new tools to compare several community detection methods, and open the door for measuring further improvements.
 }
 
 
@@ -168,62 +202,1089 @@ Maximum of 150 words for a MSc thesis.
 %First\_Name Last\_Name
 }
 
-
-
 \bibliographystyle{acm}
 
-\addtoreferences{ryesample}
-
+\addtoreferences{thesis}
 
 \renewcommand{\contentsname}{Table of Contents}
 
 
-
-
-
-
-
 \begin{document}
-\chapter{Perlims}
+\chapter{Introduction}
+\section{Community Detection}
+\section{Evaluating a Community Detection Algorithm}
+\section{Contributions}
+The bulk of this thesis is based on results from the following papers:
+\begin{itemize}
+    \item ``The Artificial Benchmark for Community Detection with Outliers and Overlapping Communities ({ABCD}+o$^2$)'' \cite{abcdoo_paper} has been accepted for publication in the Journal of Complex Networks. A preliminary version \cite{abcdoo_conference} was also published in the proceedings of WAW 2025. The authors contributed equally to the results.
+    \item ``A Pragmatic Method for Comparing Clusterings with Overlaps and Outliers'' \rc{is under review somewhere.} Ryan DeWolfe was the lead author, responsible for the idea, implementation, experiments, and initial draft.
+\end{itemize}
+It also uses algorithms developed during the program and presented in the following papers:
+\begin{itemize}
+    \item ``Improving Community Detection via Community Association Strength Scores'' \cite{cas} published in the proceedings of WAW 2025. The authors contributed equally to the results.
+    \item ``Hierarchical Single-Linkage Clustering for Community Detection with Overlaps and Outliers'' \cite{hslc} published in the proceedings of COMPLEX NETWORKS 2025. Ryan DeWolfe is the sole author.
+\end{itemize}
+Finally, written during the program but not mentioned in the thesis are the following papers:
+\begin{itemize}
+    \item ``Detecting Patterns of Interaction in Temporal Hypergraphs via Edge Clustering'' \cite{temporalhyperedgeclustering} published in the proceedings of ASONAM 2025.
+    \item ``Leveraging Non-linear Dimension Reduction and Random Walk Co-occurrence for Node Embedding'' \cite{cove} posted to arXiv.
+\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Clustering / Community Detection on Graphs Review}
+\chapter{The Artificial Benchmark for Community Detection with Overlaps and Outliers (\abcdoo)} \label{chap:abcdoo}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+To support the development and analysis of overlapping community detection algorithms, a large and diverse catalogue of networks with ground-truth communities is required for testing, tuning and training.
+Unfortunately, there are few such datasets with communities identified and labelled.
+As a result, there is a need for synthetic random graph models with known community structure that resemble real-world networks.
+The popular \lfr\ (Lancichinetti, Fortunato, and Radicchi) model~\cite{lfr,lfro} generates networks with communities and, at the same time, allows for heterogeneity in the distributions of both node degrees and of community sizes.
+Due to this structural freedom, the \lfr\ model became a standard and extensively used model for generating artificial networks with ground-truth communities. 
+A model similar to \lfr, the Artificial Benchmark for Community Detection (\abcd)~\cite{abcd}, was recently introduced in 2021.
 
-\section{Ideas}
-    \subsection{Modularity}
-    \subsection{Embedding}
-    \subsection{Spectral?}
+Undirected variants of \lfr\ and \abcd\ produce graphs with comparable properties, but \abcd\ is faster than \lfr\ and can be easily tuned to allow the user to make a smooth transition between the two extremes: pure (disjoint) communities and a random graph with no community structure.
+Moreover, \abcd\ is easier to analyze theoretically \cite{abcdmodularity,abcdselfsimilarity}.
+Finally, the building blocks in the model are flexible and may be adjusted to satisfy different needs.
+The \abcd\ model has been generalized to include outliers (\abcdo)~\cite{abcdo} and separately generalized to generate hypergraphs~\cite{habcd}.
+Accordingly, the \abcd\ model is gaining recognition as a benchmark for community detection algorithms.
+For example, in~\cite{bayan}, the authors use both \abcd\ and \lfr\ graphs to compare 30 community detection algorithms and highlight that \emph{``being directly comparable to \lfr, \abcd\ offers additional benefits, including higher scalability and better control for adjusting an analogous mixing parameter.''}
 
-\section{Algorithms}
-    \subsection{Louvain}
-    \subsection{Leiden}
-    \subsection{Rank Based Linkage?}
-    \subsection{UMAP + Vector Clustering}
-    \subsection{Something Spectral?}
+This chapter introduces the \abcdoo\ model: a further generalization of the \abcdo\ model that allows for overlapping communities.
+The \lfr\ model has been similarly extended \cite{lfro}, but in their model the nodes are assigned to communities based on the construction of a random bipartite graph between nodes and communities resulting in a small amount of overlap between almost every pair of communities and rarely any pair of communities with a large overlap.
+In \abcdoo, we instead generate overlapping communities based on a hidden, low-dimensional geometric layer which tends to yield fewer and larger overlaps.
+This geometric approach to community structure is justified by the fact that latent geometric spaces are believed to shape complex networks (e.g., social media networks shaped by users' opinions, education, knowledge, interests, etc.).
+These latent spaces have been successfully employed for many years to model and explain network properties such as self-similarity~\cite{serrano2008self}, homophily and aversion~\cite{henry2011emergence}.
+For more details, we direct the reader to the survey~\cite{boguna2021network} or the book~\cite{serrano2021shortest}.
+The ancillary benefits of the \abcd\ model (an intuitive noise parameter, a fast implementation, and theoretical analysis) are still present, making the \abcdoo\ model an attractive option for benchmarking community detection algorithms.
 
-\section{Comparisons}
-    \subsection{ABCD+O Benchmark}
+\section{The Model}
+\subsection{The Big Picture}
+The \abcdoo\ model generates a random graph on $n$ nodes with a degree sequence and a community size sequence that (by default) follow a truncated power law distribution with exponent $\gamma$ and $\beta$ respectively.
+The model samples a graph in four phases, which are visualized in Figure~\ref{fig:big_picture}.
+In the first phase, we assign non-outlier nodes to communities, making use of a $d$-dimension hidden reference layer whose geometry is used to guide the community overlap.
+Next, we sample and assign degree to nodes.
+In phase $3$, the degree of each node is split so that (on average) the proportion in the background graph is $\xi$ and the remaining degree is split evenly among the communities to which the node belongs. 
+We sample the background graph and each community graph using the configuration model.
+Finally, we perform any necessary rewiring to remove loops and multi-edges so that the final graph is simple.
+\begin{figure}
+    \center
+    \includegraphics[width=0.9\linewidth]{figures/fig1.pdf}
+    \caption{
+        A big picture example of generating an \abcdoo\ graph.
+        In panel A, we assign nodes to communities; each colour represents a community and black nodes represent outliers.
+        Note that some nodes belong to multiple communities.
+        In panel B, we assign degrees to nodes and split each degree into the background degree (black stubs) and community degree (coloured stubs).
+        In panel C, we build each graph using the configuration model.
+        Finally in panel D, we perform edge swaps to resolve self-loops and parallel edges.
+    }
+    \label{fig:big_picture}
+\end{figure}
+
+\subsection{Notation}
+For $n \in \N := \{1, 2, \ldots \}$, let $[n]$ denote the set consisting of the first $n$ natural numbers, that is, $[n] := \{1, 2, \ldots, n\}$. 
+For a random variable $X$, write $\bP(X = k)$ for the probability that $X = k$ and $\E[X]$ for the expected value of $X$.
+For a distribution $\cD$, write $X \sim \cD$ to mean $X$ is sampled from the distribution $\cD$. 
+Any real number $x \in \R$ can be written as $x = a+b$ with $a \in \Z$ and $b \in [0,1)$.
+Define a random variable
+\[
+\round{x} := \bigg\{
+\begin{array}{ll}
+a & \text{ with probability } 1-b, \text{ and}\\
+a+1 & \text{ with probability } b \,.
+\end{array}
+\]
+Note that $\E \left[ \round{x} \right] = a (1-b) + (a+1) b = x$. 
+
+For given parameters $\gamma \in (0, \infty)$, $\delta, \Delta \in \N$ with $\delta \leq \Delta$, define a truncated power-law distribution $\tpl{\gamma}{\delta}{\Delta}$ as follows.
+For $X \sim \tpl{\gamma}{\delta}{\Delta}$ and for $k \in \N$ with $\delta \leq k \leq \Delta$,
+\begin{equation}\label{eq:tpl}
+\bP(X = k) = \frac{\int_k^{k+1} x^{-\gamma} \, dx}{\int_{\delta}^{\Delta+1} x^{-\gamma} \, dx} \,.
+\end{equation}
+
+\subsection{The Configuration Model}\label{sec:configuration_model}
+The configuration model is an important ingredient of all variants of the \abcd\ models.
+Suppose that our goal is to create a graph on $n$ nodes with a given degree sequence $\textbf{d}$, where $\textbf{d} = (d_i, i \in [n])$ is a sequence of non-negative integers such that $\sum_{i \in [n]} d_i$ is even.
+The configuration model $\mathrm{CM}(\textbf{d})$, first introduced by Bollob\'as~\cite{bollobas1980probabilistic}, samples a multi-graph with the given degree sequence $\textbf{d}$.
+The model first labels $n$ nodes as $(v_i, i \in [n])$ and endowing each $v_i$ with $d_i$ half-edges.
+It then iteratively choose two unpaired half-edges uniformly at random from the set of pairs of remaining half-edges, and pair them together to form an edge.
+This process yields a multi-graph $G_n \sim \mathrm{CM}(\textbf{d})$ on $n$ nodes, where $G_n$ is allowed self-loops and multi-edges.
+See~\cite{bender1978asymptotic,wormald1984generating,wormald1999models} for related models and results.
+
+\rc{Define Rewiring?}
+
+\subsection{Parameters}
+Table~\ref{tab:parameters} summarizes the parameters that govern the \abcdoo\ model.
+Note that the ranges for parameters $\gamma$ and $\beta$ are suggestions chosen according to experimental values commonly observed in complex networks~\cite{barabasi2016network,orman2009comparison}.
+Furthermore, although power-law distributions are a sensible default option, the implementation allows the user to pass a custom degree or primary community size sequence (defined in phase 1 of section \ref{sec:abcdoo_construction}).
+
+\begin{table}
+\[
+\begin{array}{|l|l|l|}
+\hline
+\text{Parameter} & \text{Range} & \text{Description}\\
+\hline
+n & \N & \text{Number of nodes} \\
+s_0 & \N & \text{Number of outliers} \\
+\eta & [1,\infty) & \text{Average number of communities a non-outlier node is part of } \\
+d & \N & \text{Dimension of the reference layer} \\
+\rho & [-1,1] & \text{Pearson correlation between the degree of nodes and} \\
+& & \text{the number of communities they belong to} \\
+\hline
+\gamma & (2,3) & \text{Exponent for power-law degree distribution} \\
+\delta & \N & \text{Min degree} \\
+\Delta & \{ \delta, \delta+1, \ldots \} & \text{Max degree} \\
+\hline
+\beta & (1,2) & \text{Exponent for power-law community size distribution}\\
+s & \{ \delta+1, \delta+2, \ldots \} & \text{Min community size} \\
+S & \{ s, s+1, \ldots \} & \text{Max community} \\
+\hline
+\xi & [0,1] & \text{Level of noise}\\
+\hline
+\end{array}
+\]
+\caption{Parameters of the \abcdoo\ model.\label{tab:parameters}}
+\end{table}
+
+\subsection{The Generation Algorithm}\label{sec:abcdoo_construction}
+
+\subsubsection*{Phase 1: assigning communities.}
+This phase is the essential contribution of the \abcdoo\ extension. 
+We label the nodes $v_1, \dots, v_n$ such that nodes $v_{\hat{n}+1}, \dots, v_n$ are the outliers, with $\hat{n} = n - s_0$.
+
+The proposed method embeds nodes in a $d$-dimensional latent space in which we first create non-overlapping \textit{primary} communities, and then expand each community by (in expectation) a factor of $\eta$ to create overlap.
+The user may pass a sequence $(\hat{s}_j, j \in [L])$ of primary community sizes that we relabel so $\hat{s}_1 \geq \dots \geq \hat{s}_L$.
+Otherwise, we sample the primary community size sequence from a truncated power-law $\tpl{\beta}{\hat{s}}{\hat{S}}$, where $\hat{s} = \lceil s / \eta \rceil$ and $\hat{S} = \lfloor S / \eta \rfloor$.
+We sample $\hat{s}_j \sim \tpl{\beta}{\hat{s}}{\hat{S}}$ independently until the sum of samples is at least $\hat{n}$.
+Since the sum of primary community sizes must equal $\hat{n}$, if the sum is $\hat{n} + a$ for some $a > 0$ then we fix the sequence as follows.
+If the last sample $\hat{s}_{\max j}$ has size at least $a + \hat{s}$, we reduce it by $a$. Otherwise, we delete the last sample and select $\hat{s}_{\max j} - a$ other samples to increase by $1$.
+Let $L$ be the random variable counting the number of communities, and relabel $(\hat{s}_j, j \in [L])$ so that $\hat{s}_1 \geq \dots \geq \hat{s}_L$.
+
+At this point, let us pause to ensure the intuition for $\eta$ matches its use.
+A primary community with size $\hat{s}_j$ will expand to a final size of $s_j = \lfloor \eta \hat{s}_j \rceil$.
+Thus, after expanding each community, the average number of communities per non-outlier node (in expectation) is
+\begin{equation*}
+\E\left[\frac{\sum_{j \in [L]} s_j}{\hat{n}}\right]
+= \frac{\sum_{j \in [L]} \E[s_j]}{\hat{n}}
+= \frac{\sum_{j \in [L]} \E\left[\round{\eta \hat{s}_j}\right]}{\hat{n}}
+= \frac{\eta \sum_{j \in [L]} \hat{s}_j}{\hat{n}}
+= \frac{\eta \hat{n}}{\hat{n}}
+= \eta.
+\end{equation*}
+
+We now create the $d$-dimensional reference layer.
+One may think of this reference layer as a latent space representing node properties (such as people's age, education, geographic location, beliefs, etc.) and shaping communities (such as communities in social media) based on proximity.
+Each node $(v_i, i \in [\hat{n}])$ is given a vector $\mathbf{v}_i$ in $\R^d$ sampled independently and uniformly at random from the ball of radius $1$ centered at the origin.
+Let $R_1 = \{\mathbf{v}_i: i \in [\hat{n}]\}$.
+We sequentially build communities $\hat{C}_{1}, \hat{C}_{2},\ldots, \hat{C}_L$ where, by convention, $\hat{C}_{0} = \emptyset$.
+To create $\hat{C}_{j}$, we first select the vector in $R_{j}$ that is furthest from the origin, and call it the seed $c_j$.
+The community $\hat{C}_j$ is set as the node associated with the seed, along with the nodes of the seed's $\hat{s}_j - 1$ nearest neighbours in $R_j$.
+Finally, we set $R_{j+1} = R_j - \{\mathbf{v}_i: v_i \in \hat{C}_j\}$.
+At the end of the loop, each node belongs to exactly one primary community and the collection $(\hat{C}_j, j \in [L])$ is a partition of the nodes.
+
+Next, we grow each primary community $\hat{C}_j$ of size $\hat{s}_j$ to the full community $C_j$ of size $s_j$.
+Each community will grow independently, so we may grow them in any order (or in parallel).
+Let $\mathbf{x}_j \in \R^d$ be the center of mass (mean) of $\{\mathbf{v}_i : v_i \in \hat{C}_j\}$.
+The full community $C_j$ is then the union of $\hat{C}_j$, and the $s_j - \hat{s}_j$ nodes not in $\hat{C}_j$ with vectors closest to $\mathbf{x_j}$.
+In effect, we have expanded $\hat{C}_j$ around it's center of mass.
+We call the nodes in $C_j - \hat{C}_j$ the \textit{secondary} members of community $j$, and likewise for node $v \in C_j - \hat{C}_j$ we call $C_j$ a \textit{secondary} community of $v$.
+
+We now have each $v_1, \dots v_{\hat{n}}$ assigned to exactly one primary community and possibly some secondary communities.
+In Figure \ref{fig:communities} we show an example of the reference layer with $\hat{n} = 150$ and show the construction of $C_3$, with $\hat{s}_3 = 40$ and $\eta = 1.75$.
+From a computational perspective, to ensure that finding primary and secondary communities is efficient, we use k-d trees to perform spatial lookups~\cite{bentley1975kdtrees}.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.37\linewidth]{figures/fig2a.pdf}
+    \includegraphics[width=0.37\linewidth]{figures/fig2b.pdf}\\
+    \includegraphics[width=0.37\linewidth]{figures/fig2c.pdf}
+    \caption{Example of building the community $C_3$ with $\hat{s}_3 = 40$ and $\eta = 1.75$ using a 2-dimensional reference layer. First, in panel A, we select the seed $c_3$ as the vector furthest from the origin that does not have a primary community. Next (panel B), we build the primary community $\hat{C}_3$ as node of the seed and the nodes of the seed's $\hat{s}_3 - 1$ nearest neighbours that do not yet have a primary community. Finally, in panel C, we expand create $C_3$ by expanding $\hat{C}_3$ by a factor of $\eta$ (from $40$ to $40 \cdot 1.75 = 70$ nodes) by taking the nearest neighbours to the primary center of mass.}
+    \label{fig:communities}
+\end{figure}
+
+\subsubsection*{Phase 2: assigning degrees.}
+By default, we sample the degree sequence $(d_i, i \in [n])$ independently from $\tpl{\gamma}{\delta}{\Delta}$.
+Since the total degree in a simple graph must be even, if $\sum_{i \in [n]} d_i$ is odd, we decrease a maximal $d_i$ by $1$.
+Alternatively, the degree sequence can be given explicitly as an input.
+Finally, we relabel the sequence so that $d_1 \geq d_2 \geq \ldots, \geq d_n$.
+
+The goal of outliers is to sample their neighbours from the entire graph, ignoring the underlying community structure.
+However, a problem may occur if $\xi$ is close to zero.
+In the extreme case, where $\xi=0$, the edges in the background graph are precisely the edges connecting two outliers, and for a simple background graph to exist all outliers must have degree at most $s_0 - 1$.
+To handle the more general issue that arises when $\xi$ is small, we estimate the number of nodes with at least one edge in the background graph to upper-bound the allowable degree of an outlier.
+If we imagine the degrees were assigned at random, we would expect
+\begin{equation*}
+  \ell = (\hat{n} / n) \sum_{i\in [n]}\min(1, \xi d_i)
+\end{equation*}
+non-outlier nodes with positive background degree (a non-outlier with degree $d$ will have background degree $\lfloor \xi d \rceil$, see Phase 3).
+Moreover, since the $s_0$ outliers will assign their entire degree to the background graph, in total we expect $\ell + s_0$ nodes with positive background degree.
+Therefore, like in the \abcdo\ model~\cite{abcdo}, we insist that a degree $d$ cannot be assigned to an outlier unless
+\begin{equation}\label{eq:outliers}
+d \le \ell + s_0 - 1.
+\end{equation}
+In practice, the number of nodes $n$ is large, the number of outliers $s_0$ is relatively small, and the level of noise $\xi$ is not zero, so there are plenty of nodes with a non-zero degree in the background graph, and so there is no restriction needed for outliers.
+A subset of  degrees satisfying (\ref{eq:outliers}) is selected uniformly at random and assigned to the outliers.
+
+Let $(\hat{d}_i , i \in \hat{n})$ be the subsequence of degrees not assigned to outliers.
+Similar to previous paragraph, to build simple community graphs we must avoid large degrees being assigned to nodes in small communities.
+Let $\eta_i = |\{j: v_i \in C_j\}|$ be the number of communities containing $v_i$.
+When creating edges in Phase~3, node $v_i$ with degree $d$ will have at most degree $\Big\lceil \lceil (1-\xi) d \rceil / \eta_i \Big\rceil$ assigned to each of its communities (we split the community degree as evenly as possible between communities).
+So, if $v_i$ is assigned degree $d$, then for each community $C_j$ containing $v_i$, $|C_j|$ must be at least $\Big\lceil \lceil(1-\xi) d \rceil / \eta_i \Big\rceil + 1$ to accommodate the community neighbours of $v_i$.
+This is a lower bound, as additional neighbours of $v_i$ coming from the background graph might end up in $C_j$ as well.
+To account for the extra background neighbours, the \abcdo\ model~\cite{abcd} uses a small correction guided an internal parameter $\phi$.
+Extending the derivation of $\phi$ to overlapping communities would require analysis of each overlap, which would be computationally expensive.
+Instead, we keep the same equation as \abcdo, and let
+\[
+\phi = 1 - \sum_{j \in [L]} \left( \frac {\hat{s}_j}{\hat{n}} \right)^2 \frac { \hat{n} \xi }{ \hat{n} \xi + s_0 } \,.
+\]
+Typically, $\phi$ is very close to 1 and so this correction tends to be negligible in both theory and in practice, but for consistency we keep $\phi$ in the \abcdoo\ model.
+
+We can now describe the pairing process of unassigned degrees $(\hat{d}_i, i \in [\hat{n}])$ to non-outlier nodes $(v_k, k \in [\hat{n}])$.
+To guide the correlation between degree and number of communities, we introduce an internal parameter $\alpha \in \R$ that we discuss in the following paragraph.
+Recall that $(\hat{d}_i, i \in [\hat{n}])$ is monotone decreasing.
+We assign degrees sequentially, starting with $\hat{d}_1$.
+To assign $\hat{d}_i$, let $U_i$ be the collection of nodes without an assigned degree.
+We assign $\hat{d}_i$ to node $v$, chosen from the subset of $U_i$ satisfying 
+\begin{equation}\label{eq:cond_degree}
+\hat{d}_i \leq \frac{\eta_k}{1 - \xi \phi} \cdot \min \Big\{ |C_j|-1 : v_k \in C_j \Big\} \,,
+\end{equation}
+with probability proportional to $\eta_k^{\alpha}$.
+If no nodes in $U_i$ satisfy (\ref{eq:cond_degree}), we sample $v$ from the subset of $U_i$ for which the right side of (\ref{eq:cond_degree}) is maximal. 
+
+After a pairing, we compute the obtained correlation $\rho_\alpha$ and determine if $\alpha$ should be larger ($\rho_\alpha < \rho$) or smaller ($\rho_\alpha > \rho$).
+We find an appropriate value for $\alpha$ with a binary search, starting with $\alpha_{\min}=-60$ and $\alpha_{\max}=60$ and stopping once the desired precision is achieved, or after the obtained correlation level stops improving.
+In some cases it is impossible to reach the correlation level required by the user, in which case the closest possible correlation is produced.
+The relationship (beyond monotone) between $\rho$ and $\alpha$ is unclear, but we feel it is easier for a user to reason about a desired $\rho$.
+
+\subsubsection*{Phase 3: generating graphs.}
+First, we split each degree into the community degrees and the background degree.
+For each non-outlier node $v_i$ with degree $d_i$, define random variables $Y_i = \round{(1-\xi) d_i}$ and $Z_i = d_i - Y_i$ (note that $[Y_i] = (1-\xi) d_i$ and $\E[Z_i] = \xi d_i$) and split the degree $d_i$ into $Y_i$ community degree and $Z_i$ background degree.
+The community degree is further split as evenly as possible into the $\eta_i$ communities of $v_i$.
+Specifically, when splitting the community degree of $v_i$, $Y_i - \eta_i \lfloor Y_i/\eta_i \rfloor$ communities (chosen randomly) each receive degree $\lceil Y_i/\eta_i \rceil$ and the remaining communities each receive degree $\lfloor Y_i/\eta_i \rfloor$.
+Recall that by~(\ref{eq:cond_degree}), we have already ensured that each community containing $v_i$ has at least $\lceil Y_i/\eta_i \rceil+1$ nodes.
+For the outliers, the entire degree is assigned to the background.
+
+For each $j \in [L]$, we independently construct the \textit{community graph} $G_{n,j}$ as follows.
+From the previous paragraph, each $v_i \in C_j$ has some degree allocated to community $C_j$, and form the community graph $G_{n, j}$ by passing these degrees to the configuration model (Section~\ref{sec:configuration_model}).
+In the event that the sum of degrees in a community is odd, we pick a node with maximum degree in this community, decrease the community degree by one, and add one to the background degree.
+Finally, we construct the \textit{background graph} $G_{n,0}$ as per the configuration model on node set $[n]$ and degree sequence $(Z_i,i \in [n])$.
+
+\subsubsection*{Phase 4: rewiring self-loops and multi-edges.}
+Note that, although we are calling $G_{n,0},G_{n,1},\dots,G_{n,L}$ \textit{graphs}, they are in fact \textit{multi-graphs}.
+To ensure that $G_n$ is simple, we perform a series of \textit{rewirings}.
+A rewiring takes two edges as input, splits them into four half-edges, and creates two new edges distinct from the input.
+We first rewire each community graph $(G_{n,j}, j \in [L])$, and the background graph $G_{n, 0}$, independently as follows.
+\begin{enumerate}
+\item For each edge $e \in E(G_{n,j})$ that is a loop, we add $e$ to a \textit{recycle} list that is assigned to $G_{n,j}$. Similarly, if $e\in E(G_{n,j})$ contributes to a multi-edge, we add all but one copy of this edge to the \textit{recycle} list.
+\item We shuffle the \textit{recycle} list and, for each edge $e$ in the list, we choose another edge $e'$ uniformly from $E(G_{n,j}) \setminus \{e\}$ (not necessarily in the list) and attempt to rewire these two edges. If the rewiring does not lead to any further self-loops or multi-edges, we save the result and remove $e$ (and $e'$ if present) from the recycle list.
+\item If the recycle list is smaller than before the previous step, we repeat step 2. Otherwise, we give up and move all the ``bad'' edges from the community graph to a \textit{global recycle} list.
+\end{enumerate}
+
+As a result, ignoring edges in the \textit{global recycle} list, all community graphs (including the background graph) are simple.
+However, as is the case in the original \abcd\ model, an edge in the background graph can form a multi-edge with an edge in a community graph.
+Another problem, specific to \abcdoo, is that an edge from one community can form a multi-edge with an edge from a different but overlapping community.
+Both types of problematic edges are added to the \emph{global recycle} list.
+We merge all community graphs with the background graph, and rewire the \textit{global recycle} list following the same process as before (steps 2 and 3 above with $G_{n,j}$ replaced by the full graph).
+Since the graph is typically sparse, this final rewiring is usually fast.
+However, in rare cases it is possible that the process does not terminate.
+We set a limit to attempt rewiring at most 100 times the size of the global recycle list.
+If, after this many iterations, we cannot find any new admissible edge (thus reducing the size of global recycle list) we throw an error and indicate to the user that the algorithm failed to terminate with success for the given input parameters (indicating that the likely cause is that the required input degree sequence was not graphic, and should be reconsidered by the user).
+
+\section{Comparing the Model to Real Data}
+
+In this section, we present experiments highlighting the properties of the \abcdoo\ model.
+We are mainly interested in qualitatively comparing the model's properties with properties of real-world networks.
+Thus, for the model parameters, we use values derived from several networks that have known overlapping communities.
+The networks were analyzed in~\cite{yang2012defining} and are available on the Stanford Network Analysis Project (SNAP) website~\cite{snap}.
+
+\bigskip
+\noindent
+\textbf{DBLP:} a network where nodes are authors and an edge exists between two authors if they published a paper together.
+The ground-truth communities are defined by the publication venues of the journals in which the authors published.
+
+\smallskip
+\noindent
+\textbf{Amazon:} a network where nodes are products and an edge exists between two products if they are frequently co-purchased.
+The ground-truth communities are defined by product categories. 
+
+\smallskip
+\noindent
+\textbf{YouTube:} a network where nodes are YouTube channels and an edge exists between two channels if they are friends on the platform.
+The ground-truth communities are user-generated social groups.
+In the full network over $95\%$ of nodes are outliers and the level of noise $\xi$ is $0.96$.
+We consider the subgraph induced by the non-outlier nodes to avoid such extreme values.
+
+\bigskip
+For each network, all parameters other than $\delta$ and $s$ are measured directly from the data.
+We set $\delta = 5$ to avoid cases where nodes have no neighbours in their own community, and insist on $s \geq 10$.
+The power-law exponents $\gamma$ and $\beta$ are fit using maximum-likelihood estimation described in \cite{clauset2009powerlaw} and implemented in the Python package \textbf{powerlaw}~\cite{alstott2014powerlaw}.
+In this fitting process, we set the minimum degree as $\delta = 5$ and the minimum community size as $s=10$ for consistency.
+The level of noise $\xi$ is computed directly from the graphs as the fraction $|E_b|/|E|$ where $E_b$ is the set of edges where the incident nodes share no communities.
+The parameters for each network are shown in Table~\ref{tab:real_graph_params}.
+
+\begin{table}
+    \centering
+    \begin{tabular}{|c|p{0.52\linewidth}|c|c|c|}
+        \hline
+         Parameter & Description & DBLP & Amazon & YouTube \\ \hline
+         $n$ & Number of nodes & $317{,}080$ & $334{,}863$ & $52{,}675$ \\
+         $s_0$ & Number of outliers & $56{,}082$ & $17{,}669$ & $0$ \\
+         $\eta$ & Average number of communities a non-outlier node is part of & $2.76$ & $7.16$ & $2.45$ \\
+         $\rho$ & Pearson correlation between the degree of nodes and the number of communities they belong to & $0.76$ & $0.22$ & $0.37$ \\ \hline
+         $\gamma$ & Exponent of power-law degree distribution & $2.30$ & $3.04$ & $1.87$ \\
+         $\delta$ & Min degree & $5$ & $5$ & $5$ \\
+         $\Delta$ & Max degree & $343$ & $549$ & $1{,}928$\\
+         \hline
+         $\beta$ & Exponent of power-law community size distribution& $1.88$ & $2.03$ & $2.13$\\
+         $s$ & Min community size & $10$ & $10$ & $10$\\
+         $S$ & Max community size & $7{,}556$ & $53{,}551$ & $3{,}001$ \\
+         \hline
+         $\xi$ & Level of noise & $0.11$ & $0.11$ & $0.59$ \\ \hline
+    \end{tabular}
+    \medskip
+    \caption{The parameters used for generating \abcdoo\ graphs based on the DBLP, Amazon, and YouTube datasets.}
+    \label{tab:real_graph_params}
+\end{table}
+Additionally, most of the experiments are affected by the dimension $d$ of the hidden reference layer. In such cases, we compare dimensions $2$, $8$, and $64$. 
+
+\subsection{Effects of the Reference Layer} \label{sec:effects_of_reference_layer}
+The new and novel feature of the \abcdoo\ model is the hidden reference layer used to generate overlapping communities.
+Here, we analyze the effects of this reference layer on the community overlap sizes.
+For comparison, we consider the CKB model~\cite{chykhradze2014ckb} following a description from~\cite{sengupta2017ckbdescription}.
+The CKB model is an application of the random bipartite community affiliation graph proposed for overlapping \lfr~\cite{lfro} that uses a power-law distribution for the number of communities per node.
+Let us briefly summarize this graph construction process.
+The community affiliation graph is a bipartite graph where one part consists of nodes and the other consists of communities.
+As input, the CKB model requires the number of nodes $n$, a truncated power-law distribution $\tpl{\Omega}{x_{\min}}{x_{\max}}$ for the number of communities per node, and another truncated power-law distribution $\tpl{\beta}{s}{S}$ for the community sizes.
+The number of communities is set to 
+\[
+\left\lfloor \frac{n \cdot \E[\tpl{\Omega}{x_{\min}}{x_{\max}}]}{\E[\tpl{\beta}{s}{S}]} \right\rfloor \,.
+\]
+First, each node in the bipartite graph is assigned a number of half-edges sampled from $\tpl{\Omega}{x_{\min}}{x_{\max}}$, and likewise each community is assigned a number of half-edges sampled from $\tpl{\beta}{s}{S}$.
+A small adjustment is made to ensure that the number of half-edges in both parts is equal.
+Lastly, the nodes are matched with the communities based on the bipartite configuration model.
+Thus, each community is populated with nodes, and each node is assigned to some number of communities. 
+
+\subsubsection*{Community sizes.}
+
+In the first experiment (see Figure~\ref{fig:com-size}), we compare the distributions of community sizes.
+Of course, since both \abcdoo\ and CKN sample community sizes directly from the specified distribution, it is unsurprising that the empirical distributions are near-perfect fits when accounting for the imposed minimum community size of $10$.
+Thus, this first experiment merely acts as a sanity check ensuring that the \abcdoo\ and CKN models generate community sizes correctly.
+Moreover, this experiment verifies that the distributions coming from the real networks are indeed power-law.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.48\linewidth]{figures/dblp_com_size.pdf}\hfill
+    \includegraphics[width=0.48\linewidth]{figures/amazon_com_size.pdf}\\
+    \includegraphics[width=0.48\linewidth]{figures/youtube_com_size.pdf}
+    \caption{
+        Distribution of community sizes for real-world networks and their synthetic counterparts: DBLP in panel A, Amazon in panel B, and Youtube in panel C.
+        The y-axis shows the empirical complementary cumulative distribution function, computed as $y = 1 - |\{C_i : |C_i| < x\}| \; / \; |\{C_i\}|$.
+    }
+    \label{fig:com-size}
+\end{figure}
+
+\subsubsection*{Number of communities per node.}
+Results are presented in Figure~\ref{fig:coms-per-node}.
+In contrast with the previous experiment, there is less agreement between the two models and the real distributions.
+In the case of the YouTube and DBLP networks, the power-law distribution generated by the CKN model is a good fit for the empirical distribution, whereas the Amazon distribution does not appear to be power-law.
+In contrast, the \abcdoo\ model is able to produce a distribution similar to each of the three networks with a properly tuned dimension parameter $d$; for the Amazon graph a low dimensional reference layer captures the behaviour well, and for the DBLP and YouTube graphs a high dimensional reference layer captures the behaviour well.
+The flexibility and realistic distributions are even more encouraging when we recall that the distribution is not given to the \abcdoo model, and is instead a natural feature of the hidden reference layer. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.48\linewidth]{figures/dblp_coms_per_node.pdf}\hfill
+    \includegraphics[width=0.48\linewidth]{figures/amazon_coms_per_node.pdf}\\
+    \includegraphics[width=0.48\linewidth]{figures/youtube_coms_per_node.pdf}
+    \caption{
+        Distribution of the number of communities per node in each real-world network and their synthetic counterparts: DBLP in panel A, Amazon in panel B, and Youtube in panel C.
+        The y-axis shows the empirical complementary cumulative distribution function, computed as $y = 1 - |\{v_i : |\{C_j : v_i \in C_j\} < x\}| \; / \; |V|$.
+    }
+    \label{fig:coms-per-node}
+\end{figure}
+
+\subsubsection*{Community intersection sizes.}
+Results are presented in Figure~\ref{fig:com-overlap}.
+We examine the size of the overlaps produced by each model.
+Neither the \abcdoo\ model nor the CKN model specifies a particular distribution, but we can see the \abcdoo\ model, with a well-tuned dimension parameter, is able to create a similar distribution to the real graph.
+In contrast, the CKN model does not fit the Amazon and YouTube graphs well.
+Specifically, the CKN model produces too many small intersections and, moreover, the largest intersection is several orders of magnitude too small.
+We consider this experiment strong evidence for using a reference layer as the default option for generating overlapping communities.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{figures/overlap.pdf}
+    \caption{
+        Distribution of the size of overlaps in real graphs and their synthetic counterparts.
+        Each row corresponds to a real graph, panels A,B,C for DBLP, panels D,E,F for Amazon, and panels G,H,I for Youtube.
+        The left (panels A,D,G), center (panels B,E,H) and right (panels C,F,I) columns correspond to overlaps of two, three, and four communities respectively.
+        The y-axis shows the empirical complementary cumulative distribution function of non-empty overlaps.
+        For example, the center column of figures corresponds to three overlapping communities and is computed as $y = 1 - |\{ \{C_i, C_j, C_k\} : |C_i \cap C_j \cap C_k| < x\}| \; / \; |\{ \{C_i, C_j, C_k\} : |C_i \cap C_j \cap C_k| \neq \emptyset|$.
+    }
+    \label{fig:com-overlap}
+\end{figure}
+
+\subsection{Additional properties of the model.} \label{sec:graph_properties}
+
+We now turn to properties of the \abcdoo\ model beyond those governed by the hidden reference layer.
+
+\subsubsection*{Degree vs.\ number of communities.}
+
+The \abcdoo\ model attempts to produce a correlation $\rho$ between the degree of a node and the number of communities it belongs to.
+In Table~\ref{tab:rho} we report the desired correlation $\rho$ for each of the networks, as well as the achieved correlation for the \abcdoo\ graphs.
+Note that the extreme positive correlation found in the DBLP network cannot be matched by the model, although it can still achieve a strong positive correlation.
+The maximum achievable correlation increases with the dimension as there are more nodes belonging to a large number of communities (see Figure~\ref{fig:coms-per-node}).
+
+\begin{table}
+    \centering
+    \begin{tabular}{|c|c|c|c|c|}
+        \hline
+        Graph & Empirical & $d=2$ & $d=8$ & $d=64$ \\ \hline
+        DBLP & $0.76$ & $0.42$ & $0.56$ & $0.68$ \\
+        Amazon & $0.22$ & $0.20$ & $0.19$ & $0.20$ \\
+        YouTube & $0.37$ & $0.37$ & $0.36$ & $0.38$ \\
+        \hline
+    \end{tabular}
+    \smallskip
+    \caption{
+        Measured $\rho$ in both the real networks and the corresponding \abcdoo\ graphs.
+        We generated 10 \abcdoo\ graphs for each dimension $d$ of the reference layer, and found that across all graphs and dimensions, the standard error, to two decimal places, was $0$.
+    }
+    \label{tab:rho}
+\end{table}
+
+\subsubsection*{Density of intersections}
+\label{subsec:rho}
+One consequence of forcing nodes of large degree into community intersections is that those intersections will be denser than the individual communities.
+We show this phenomenon in Figure~\ref{fig:intersection density vs rho} by comparing the community and intersection densities for various $\rho$ while fixing the other parameters.
+Note that, given communities $C_j$ and $C_k$ with $s_j \gg s_k$, the density of $C_k$ is almost always larger than that of $C_j$ since both community graphs are sparse (at most a $1-\xi$ fraction of each node's degree is delegated to one of its communities).
+Figures for the other graphs and dimensions can be found in Appendix~\ref{a:intersection_density}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.48\linewidth]{figures/youtube_rho_vs_overlap_density_d8.pdf}
+    \includegraphics[width=0.48\linewidth]{figures/dblp_rho_vs_overlap_density_d8.pdf}
+    \caption{
+        Community overlap densities compared to individual community densities for various values of $\rho$ in Youtube-like graphs (panel A) and DBLP-like graphs (panel B) with $d=8$.
+        For 9 \abcdoo\ graphs with $\rho$ evenly spaced in $[-0.5, 0.5]$, we compute the empirical value $\hat{\rho}$ and the distribution of density for overlapping communities.
+        We plot $\hat{\rho}$ against the distribution of the density for the intersection and each community individually.
+        The line corresponds to the median, and the shaded region to the 25th to 75th quantile.
+        For computational reasons, we only consider overlaps of size at least 25, and to ensure we are not simply measuring the density of the smaller community, the size of the overlap must be at most half the size of the smaller community.
+    }
+    \label{fig:intersection density vs rho}
+\end{figure}
+
+Having community intersections that are denser than the respective communities is a desirable property and one of our main motivators for introducing the parameter $\rho$ to the \abcdoo\ model.
+In~\cite{yang2014overlapping} it was found that, in real networks, community intersections can be significantly denser than the individual communities.
+In Figure~\ref{fig:dblp-overlaps} we confirm that the DBLP, Amazon, and YouTube networks all exhibit this phenomenon.
+Moreover, we compare these densities with those of the corresponding \abcdoo\ graphs.
+Aside from confirming that the model can produce behaviour similar to the real networks, we also find that the dimension of the reference layer affects the density of both the communities and the intersections.
+Moreover, we see that a low-dimensional reference layer yields a better approximation of the real data in the case of Amazon, whereas a high-dimensional reference layer yields a better approximation in the cases of DBLP and YouTube.
+In the case of DBLP, the difference in distribution between dimensions is partially attributable to the difference in the empirical $\rho$ (recall with Table~\ref{tab:rho} that the low dimension graphs could not achieve a large correlation.
+Note that the most similar dimension for each real graph is consistent with the experiment presented in Figure~\ref{fig:coms-per-node}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.48\linewidth]{figures/dblp_overlap_density.pdf}\hfill
+    \includegraphics[width=0.48\linewidth]{figures/amazon_overlap_density.pdf}\\
+    \includegraphics[width=0.48\linewidth]{figures/youtube_overlap_density.pdf}
+    \caption{
+        Distribution of the density for pairs of communities with non-zero overlap in real graphs and their synthetic counterparts; DBLP in panel A, Amazon in panel B, and Youtube in panel C.
+        The shaded region corresponds to the 25th to 75th quartiles, and the whiskers correspond to the maximum and minimum values.
+        We restrict to overlaps of size at least $10$ due to the discrete and unpredictable nature of small communities.
+    }
+    \label{fig:dblp-overlaps}
+\end{figure}
+
+\subsubsection*{Internal edge fraction}
+\label{subsec:ief}
+Finally, we analyze how strongly nodes are connected to their communities.
+There are many measures for community association strength, some of which we recently analyzed in~\cite{cas}.
+For the sake of simplicity, the measure we will use here is the internal edge fraction $\mathrm{IEF}(v, C)$, defined as
+\[
+\mathrm{IEF}(v, C) = \frac{|\{ \{u,v\} \in E: u \in C\}|}{\deg(v)} \,.
+\]
+For a graph $G$, a collection of communities $\{C_i, i \in [k]\}$, and a node $v$, let $C^{(v)}_1, \dots, C^{(v)}_k$ be an ordering of the communities such that 
+\[
+\mathrm{IEF}(v, C^{(v)}_1) \geq \mathrm{IEF}(v, C^{(v)}_2) \dots \geq \mathrm{IEF}(v, C^{(v)}_k) \,.
+\]
+Then, if $v$ is a member of $\ell$ communities, we would expect a jump in value between $\mathrm{IEF}(v, C^{(v)}_\ell)$ and $\mathrm{IEF}(v, C^{(v)}_{\ell + 1})$.
+In Figure~\ref{fig:dblp-ief} we show the range of the top five internal edge fractions, sorted in descending order, on DBLP (left) and a generated \abcdoo\ graph (right), binned by the number of communities the node $v$ is in.
+As predicted, a node in $\ell$ communities tends to have $\ell$ relatively large internal edge fractions.
+Furthermore, despite the \abcdoo\ model splitting the community degree of a node $v$ evenly among its $\ell$ communities, it is possible for $v$ to have a higher internal edge fraction into community $C$ if either some of $v$'s edges lies in an intersection containing $C$ or some of $v$'s background edges land in $C$.
+Thus, we see a pattern in \abcdoo\ graphs where there are $\ell$ large but unequal internal edge fraction values.
+This feature is also present in the DBLP graph, the other real graphs, and the other \abcdoo\ graphs (see Appendix~\ref{a:ief} for a complete collection of figures).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.48\linewidth]{figures/dblp_ief.pdf}
+    \hfill
+    \includegraphics[width=0.48\linewidth]{figures/dblp_ief_d8.pdf}
+    \caption{
+        Five largest internal edge fractions, sorted in descending order, grouped by the number of communities.
+        Panel A corresponds to the DBLP graphs, and panel B to the synthetic counterpart with reference layer dimension $d=8$.
+        A pattern is consistent between DBLP and \abcdoo, namely, that for nodes belonging to $\ell$ communities there are $\ell$ large, but not equal, internal edge fraction values.
+    }
+    \label{fig:dblp-ief}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{A Pragmatic Method for Comparing Clusterings with Overlaps and Outliers}\label{chap:fstar}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The second necessary component for extrinsic validity benchmarks is a method to compare clusterings \cite{comparisonreview}.
+In this chapter, we use a set-matching framework \cite{setmatching} and the $F^*$ score \cite{f*_hand} to define a method for comparing clusterings that could have overlaps or outliers.
+The method is simple, computationally efficient, and exhibits several intuitive properties one would expect in a comparison measure.
+
+\section{Existing Options}\label{sec:related}
+Comparing partitions is a well-studied problem, and there are a wide variety of measures that are used~\cite{comparisonreview}, which can be broadly classified as either pair-counting, information theoretic, or set-matching~\cite{setmatching}.
+In this section, we review some extensions to overlapping clusterings, although, to the best of our knowledge, none have explicitly considered outliers.
+
+The \textit{Omega} index~\cite{omega} extends the pair-counting Adjusted Rand Index (ARI)~\cite{ari} by extending the contingency table from agree versus disagree to counting the number of clusters in common.
+This extension is reasonable and is equivalent to the ARI for partitions, but is quite harsh since it does not detect any similarity if a pair of objects does not share the exact same number of clusters in both clusterings.
+Furthermore, the non-adjusted version of the Omega index suffers from the same issues as the non-adjusted Rand index: values tend to be large, even for random clusterings.
+The adjustment proposed implicitly assumes a null-model for generating random clusterings, the choice of which has been shown to have an effect for comparing partitions~\cite{partition_models}, and generally requires careful consideration of the assumptions when extending beyond partitions~\cite{fuzzy_models}.
+
+Lancichinetti et al.~\cite{onmi} proposed the overlapping Normalized Mutual Information (oNMI), an extension of the information theoretic Normalized Mutual Information~\cite{ami} using a set matching framework.
+The oNMI (and NMI) requires an adjustment term to normalize values across datasets, and McDaid et al.~\cite{onmi2} note that the original adjustment leads to some unintuitive behaviour, and suggests an alternative.
+In fact, there are 5 possible adjustment terms and, similar to the previously mentioned null-models, any choice must be carefully considered.
+In our experiments, we test both suggested adjustments, referring to that of Lancichinetti et al.~\cite{onmi} as $\mathrm{oNMI_{LFK}}$ and that of McDaid et al.~\cite{onmi2} as $\mathrm{oNMI_{MGH}}$.
+
+By shifting the focus from clusters to objects, the Element-Centric Clustering comparison (ECC)~\cite{ecc} is a new class of method.
+The method constructs a \textit{cluster-induced element graph} by placing a directed and non-uniformly weighted clique over each cluster (with weights chosen so that the degree of each object is split evenly across its clusters), and comparing the personalized pagerank vectors of each object.
+This method is intuitive and allows for interesting object-level agreement analysis, but  has several drawbacks for comparing clusterings.
+Critically, the ECS may assign maximum similarity to non-identical clusterings; for example, a single cluster that contains all objects compared to any uniform Balanced Incomplete Block Design (BIBD) over the objects will achieve maximum similarity.
+A BIBD is a clustering where each pair of objects appears in the same number of clusters and each cluster has the same size.
+These symmetries create a cluster induced element graph that is a clique with equal weights, which is identical (up to a constant scaling, which is ignored by the personalized pagerank computation) to the cluster-induced element graph of a single cluster containing all objects.
+Furthermore, the ECS is computationally difficult for large datasets with overlapping clusters, and the natural extension would treat outliers the same as clusters of size one.
+
+Finally, we briefly mention the \textit{problem of matching}~\cite{vi} that affects set-matching measures~\cite{setmatching} like the oNMI and our proposed measure.
+The problem of matching refers to the indifference of a measure to the part of each cluster that is unmatched.
+In particular, if the unmatched portion of a cluster is concentrated in one other cluster, then it is somehow less disrupted than if the unmatched portion was spread across many clusters.
+However, while it may be less disrupted in an edit distance sense (and only if moving multiple objects between clusters costs less than moving each object individually), we disagree that intuition dictates that these disruptions should not be equally dissimilar to the original. 
+In fact, by measuring the ability of each cluster to find a match in the other clustering, a set-matching measure provides interesting cluster level information that could be useful for detecting where the clusterings disagree, possibly complementing the object level information available from the ECS~\cite{ecc}.
+
+\section{The Proposed Measure}
+For a set of objects $X = \{x_1, x_2, \ldots, x_n\}$, we define a \textit{clustering} as set of non-empty subsets of $X$.
+We call each element of a clustering a \textit{cluster}.
+Note that with this definition, each cluster in a clustering is distinct, and the empty set cannot be a cluster.
+However, we allow the clustering itself to be the empty set.
+
+To define methods for comparing clusterings $\cCone$ and $\cCtwo$, we first define some methods for comparing two individual clusters.
+A cluster similarity function is a map between two subsets of $X$ and a value in $[0,1]$ that measures some notion of similarity (with $1$ denoting maximum similarity).
+The standard precision ($p$), recall ($r$), and $F_1$ similarity functions between two clusters $C_i, C_j \subseteq X$ are defined as:
+\begin{gather*}
+    p(C_i, C_j) = \frac{|C_i \cap C_j|}{|C_i|},\\
+    r(C_i, C_j) = \frac{|C_i \cap C_j|}{|C_j|},\\
+    F_1(C_i, C_j) = \frac{2}{1 / p(C_i, C_j) + 1 / r(C_i, C_j)}.
+\end{gather*}
+Precision and recall both have nice interpretations as the probability of being in a cluster conditional on being in other.
+The $F_1$ score is very popular to combine the precision and recall into a single score, but has gathered criticism for being pragmatic but ultimately unjustified~\cite{F-review}.
+In~\cite{f*_hand}, the authors argue that another combination of precision and recall, which they call the $F^*$ score, is more interpretable.
+Furthermore, they show that $F^*$ is a monotonic transformation of $F_1$, which means any ranking of similarities using $F_1$ will be the same when using $F^*$.
+The $F^*$ score is equivalent to the well-known Jaccard index for set similarity, and is defined as
+\begin{equation*}
+F^*(C_i, C_j) = \frac{F_1(C_i, C_j)}{2 - F_1(C_i, C_j)} = \frac{|C_i \cap C_j|}{|C_i \cup C_j|}.
+\end{equation*}
+For the rest of the paper, we will use $F^*$.
+It could be replaced by any of the above (or other) set similarity measures, but it is easy to work with and will serve as a general comparison measure.
+
+Next, we define methods for measuring how well each cluster in $\cCone$ can find a matching cluster in $\cCtwo$.
+For a cluster $C_i \in \cCone$, we find a matching cluster by taking the maximum similarity when comparing to each cluster in $\cCtwo$:
+\begin{equation*}
+    F^*(C_i, \cCtwo) = \max_{C_j \in \cCtwo} \big\{ F^*(C_i, C_j) \big\}.
+\end{equation*}
+We define the edge case $F^*(C_i, \emptyset) = 0$ since $C_i$ cannot find a cluster with any similarity.
+
+Then, to summarize the match quality from each cluster, we compute the weighted average similarity.
+\begin{equation*}
+    \hat{F}^{*}_w(\cCone, \cCtwo) = \sum_{C_i \in \cCone} \frac{|C_i|}{\sum_{C_k \in \cCone} |C_k|} F^*(C_i, \cCtwo).
+\end{equation*}
+This function is a measure of how well each cluster in $\cCone$ can find a match in $\cCtwo$, but not necessarily the reverse.
+This asymmetric similarity measure could be useful in domains where the performance of a clustering algorithm should be measured by its ability to find clusters that actually exist, but where we are not concerned with complete coverage; for example, in some instances of exploratory data analysis.
+
+Of course, we can also find the best match for each cluster from $\cCtwo$ in $\cCone$ with $\hat{F}^*_w(\cCtwo, \cCone)$.
+Finally, we use a linear combination with equal weights to combine both directions into a single symmetric similarity score;
+\begin{equation*}
+    F^*_w(\cCone, \cCtwo) = 0.5 \hat{F}^{*}_w(\cCone, \cCtwo) + 0.5\hat{F}^{*}_w(\cCtwo, \cCone).
+\end{equation*}
+
+The similarity measure $F^*_w$ serves as a simple score to evaluate how similar the clusters of two clusterings are, but crucially does not consider objects that are not part of any cluster.
+We call an object $x_i \in X$ an \textit{outlier} with respect to a clustering $\cC$ if $x \not \in \bigcup_{C \in \cC} C$.
+For cases where most of the objects are not outliers, $F^*_w$ might be acceptable, but we can add a term for matching the outliers between clusterings.
+Let $O^{(1)}$ be the set of outliers with respect to $\cCone$, and likewise for $O^{(2)}$ with $\cCtwo$.
+The outlier aware versions of $\hat{F}^*_w$ and $F^*_w$ are defined as
+\begin{equation*}
+    \hat{F}^{*}_{wo}(\cCone, \cCtwo) = \frac{|O^{(1)}|}{|X|} F^*(O^{(1)}, O^{(2)}) + \frac{|X \setminus O^{(1)}|}{|X|} \hat{F}^{*}_w(\cCone, \cCtwo)
+\end{equation*}
+and
+\begin{equation*}
+    F^*_{wo}(\cCone, \cCtwo) = 0.5\hat{F}^*_{wo}(\cCone, \cCtwo) + 0.5\hat{F}^*_{wo}(\cCtwo, \cCone).
+\end{equation*}
+
+\section{Properties}
+In this section, we analyze some basic properties of the proposed $F^*_{wo}$ score, and establish that it is reasonable in matching the intuition and general use-case of comparing clustering algorithms.
+First, we state a few properties that are absolutely required for an intuitive similarity measure, the proofs of which are elementary and are omitted for brevity.
+
+\begin{proposition}
+    The proposed measure $F^*_{wo}$ has the following properties.
+    \begin{enumerate}
+        \item $F^*_{wo}$ is label invariant.
+        \item $F^*_{wo}(\cCone, \cCtwo) \in [0,1]$, and $F^*_{wo}(\cCone, \cCtwo) = 1$ if and only if $\cCone = \cCtwo$.
+        \item $F^*_{wo}$ is symmetric.
+        \item Single object clusters are not the same as outliers.
+    \end{enumerate}
+\end{proposition}
+
+The first property is the essential difference between clustering and multi-class classification tasks.
+Implementations generally assign a label to each cluster (often using the natural numbers $1$ to $|\cC|$), but such a labelling is arbitrary and should not affect the similarity to another clustering.
+The second property is called \textit{normalization}~\cite{ami}, and it is defined as a bounded range for the measure independent of the particular clusterings under consideration.
+A normalized measure means that the output is on the same scale regardless of the clusterings, and scores are comparable even if the clusterings have a different number of clusters or objects.
+The final property is the key differentiation of our method with those presented in Section~\ref{sec:related}, in the sense that the obvious extensions of the existing methods would treat outliers identically to single object clusters.
+
+The complement of some similarity measures (that is, $1 - s$ for a similarity measure $s$) for partitions are metrics, and it has been argued that a metric structure better matches our intuitions about similarity \cite{vi}.
+However, in practice, many of the most popular similarity measures, such as the ARI~\cite{ari}, NMI~\cite{nmi} (using the arithmetic mean, the default in the popular python machine learning library scikit-learn), and AMI~\cite{ami}, in addition to the Omega~\cite{omega}, oNMI~\cite{onmi}, and ECS~\cite{ecc} from Section~\ref{sec:related}, are not the complement of a metric.
+Thus, even though being the complement of a metric is desirable, we conclude that this property is not absolutely necessary for a pragmatic similarity measure.
+
+\begin{proposition} \label{prop:metric}
+    The complement of the proposed measure, $1 - F^*_{wo}$, is not a metric.
+\end{proposition}
+\begin{proof}
+    We provide a counterexample for the triangle inequality.
+    Let $M(\cCone, \cCtwo) = 1 - F^*_{wo}(\cCone, \cCtwo)$.
+    Let $X = \{1,2,3\}$, and consider the following three clusterings:
+    \begin{equation*}
+        \cCone = \{ \{1,2,3\} \}, \quad \cCtwo = \{ \{1\}, \{1,2,3\} \}, \quad \cCthree =  \{ \{1\}, \{2,3\} \}
+    \end{equation*}
+    We compute
+    \begin{align*}
+        M(\cCone, \cCtwo) &= 1 - \left( 0.5\left(1\right) + 0.5\left(\frac{1}{4}\frac{1}{3} + \frac{3}{4}1\right) \right) = \frac{1}{12},\\
+        M(\cCtwo, \cCthree) &= 1 - \left( 0.5\left(\frac{1}{4}1 + \frac{3}{4}\frac{2}{3}\right) + 0.5\left(\frac{1}{3}1 + \frac{2}{3}\frac{2}{3}\right) \right) = \frac{17}{72},\\
+        M(\cCone, \cCthree) &= 1 - \left( 0.5\left(\frac{2}{3}\right) + 0.5\left(\frac{1}{3}\frac{1}{3} + \frac{2}{3}\frac{2}{3}\right) \right) = \frac{7}{18},
+    \end{align*}
+    and find that
+    \begin{equation*}
+        M(\cCone, \cCtwo) + M(\cCtwo, \cCthree) = \frac{1}{12} + \frac{17}{72} = \frac{23}{72} < \frac{7}{18} = M(\cCone, \cCthree),
+    \end{equation*}
+    and the triangle inequality does not hold.
+\end{proof}
+Since none of the clusterings used in the proof of Proposition~\ref{prop:metric} contain outliers, this counterexample shows that $1-F^*_w$ is also not a metric.
+
+Finally, we examine the effect of a small change to one of the clusterings being compared.
+\begin{theorem}\label{thm:robust}
+    Let $\cCone$ and $\cCtwo$ be clusterings of $X$, and let $\tcCone$ be a clustering created from $\cCone$ by moving one object, $x$, into or out of one cluster.
+    Let $B = \sum_{C \in \cCtwo} |C|$.
+    If $|\cCone| = |\tcCone|$ (no clusters were created or destroyed), say $x$ was added or removed from $C_1 \in \cCone$, then
+    \begin{align*}
+    &\left| F^*_{wo}(\cCone, \cCtwo) - F^*_{wo}(\tcCone, \cCtwo) \right|\\
+    &\qquad = \bigO \left( \frac{1}{|X|} \max \left\{ 1, \frac{|X \setminus O^{(2)}| \gamma}{B} \right\} \right),
+    \end{align*}
+    where $\gamma = |\{C \in \cCtwo : C \text{ matched with } C_1 \text{ or } x \in C\}|$. 
+    Otherwise, 
+    \begin{equation*}
+            \left| F^*_{wo}(\cCone, \cCtwo) - F^*_{wo}(\tcCone, \cCtwo) \right| = \bigO \left( \frac{1}{|X|} \max \left\{ 1, \frac{|X \setminus O^{(2)}| \Gamma}{B} \right\} \right),
+    \end{equation*}
+    where $\Gamma = |\{C \in \cCtwo : x \in C\}|$.
+\end{theorem}
+With Theorem~\ref{thm:robust}, we confirm that, subject to some mild constraints on the clusterings, moving one element into or out of a cluster has only a small effect on the similarity to a reference clustering.
+In both cases, the right-hand side can be improved to $\bigO(\frac{1}{|X|})$ with additional mild constraints on $\cCtwo$ that prevent an object from being in too many clusters.
+
+First, we prove a few lemmas about some of the intermediate scores, and we will then combine these results to prove Theorem \ref{thm:robust}.
+For rest of the section, let $\cCone$ and $\cCtwo$ be clusterings of $X$. 
+Let $x \in X \setminus C_1$ for some $C_1 \in \cCone$, and create a new cluster $\tilde{C} = C_1 \cup \{x\}$.
+Let $\tcCone$ be the clustering obtained from $\cCone$ by replacing $C_1$ with $\tilde{C}$.
+This corresponds to the first scenario in Theorem \ref{thm:robust}.
+\begin{lemma}\label{lem:one}
+    If $C_j \subseteq X$ then
+    \begin{equation*}
+        \left|F^*(C_1, C_j) - F^*(\tilde{C}, C_j)\right| \leq \frac{1}{|C_1|} \text{ and } \left|F^*(C_1, C_j) - F^*(\tilde{C}, C_j)\right| \leq \frac{1}{|C_j|}.
+    \end{equation*}
+\end{lemma}
+\begin{proof}
+    There are two cases to consider. First, if $x \in C_j$, then
+    \begin{equation*}
+        \left|F^*(C_1, C_j) - F^*(\tilde{C}, C_j)\right| = \left| \frac{|C_1 \cap C_j|}{|C_1 \cup C_j|} - \frac{|\tilde{C} \cap C_j|}{|\tilde{C} \cup C_j|} \right| = \frac{1}{|C_1 \cup C_j|}.
+    \end{equation*}
+    And if $x \not \in C_j$, then
+    \begin{equation*}
+        \left|F^*(C_1, C_j) - F^*(\tilde{C}, C_j)\right| = \left| \frac{|C_1 \cap C_j|}{|C_1 \cup C_j|} - \frac{|\tilde{C}  \cap C_j|}{|\tilde{C} \cup C_j|} \right| = \frac{|C_1 \cap C_j|}{|C_1 \cup C_j| \cdot |\tilde{C} \cup C_j|} \leq \frac{1}{|\tilde{C} \cup C_j|}.
+    \end{equation*}
+    In either case, $|C_1|, |C_j| \leq |C_1 \cup C_j| \leq |\tilde{C} \cup C_j|$ so $1 / |\tilde{C} \cup C_j| \leq 1 / |C_1 \cup C_j| \leq 1/ |C_1|, 1 / |C_j|$. 
+\end{proof}
+
+\begin{lemma}\label{lem:two}
+    Let $A = \sum_{C \in \cCone} |C|$.
+    \begin{equation*}
+        \left| \hat{F}^*_w(\cCone, \cCtwo) - \hat{F}^*_w(\tcCone, \cCtwo) \right| = \bigO\left(\frac{1}{A}\right).
+    \end{equation*}
+\end{lemma}
+\begin{proof}
+    Recall that
+    \begin{equation*}
+        \hat{F}^*_w(\cCone, \cCtwo) = \frac{1}{A} \sum_{C \in \cCone} |C|F^*(C, \cCtwo).
+    \end{equation*}
+    Using the relationship between $\cCone$ and $\tcCone$, we get
+    \begin{equation*}
+        \hat{F}^*_w(\tcCone, \cCtwo) = \frac{1}{A+1}\left((|C_1|+1)F^*(C_1, \cCtwo) + \sum_{C_i \in \cCone, i \neq 1} |C_i|F^*(C_i,\cCtwo)\right).
+    \end{equation*}
+    It follows that
+    \begin{align*}
+    & \left| \hat{F}^*_w (\cCone, \cCtwo) - \hat{F}^*_w (\tcCone, \cCtwo) \right| \\
+    \le& \left| \frac {|C_1| F^*(C_1, \cCtwo)} {A} - \frac {(|C_1|+1) F^*(\tilde{C}_1, \cCtwo)} {A+1} \right| \\
+    & \qquad + \left| \frac {1}{A} - \frac {1}{A+1} \right| \cdot \left| \sum_{C_i \in \cCone, i \neq 1} |C_i| F^*(C_i, \cCtwo) \right| \\
+    \le& \frac {A |C_1| \left| F^*(C_1, \cCtwo) - F^*(\tilde{C}_1, \cCtwo) \right| + \left| |C_1| F^*(C_1, \cCtwo) - A F^*(\tilde{C}_1, \cCtwo) \right| }{A \cdot (A+1)} \\
+    & \qquad + \frac {1}{A \cdot (A+1)} \cdot A.
+    \end{align*}
+    Using Lemma~\ref{lem:one}, we get 
+    \begin{eqnarray*}
+    \left| \hat{F}^*_w (\cCone, \cCtwo) - \hat{F}^*_w (\tcCone, \cCtwo) \right| &\le& \frac {A+A+A}{A \cdot (A+1)} = \bigO\left(\frac{1}{A}\right),
+    \end{eqnarray*}
+    which finishes the proof.
+\end{proof}
+
+\begin{lemma} \label{lem:three}
+    Let $B = \sum_{C \in \cCtwo} |C|$ and $\gamma = \left| \{ C \in \cCtwo : C \text{ matched with } C_1 \text{ or } x \in C\} \right|$.
+    \begin{equation*}
+        \left| \hat{F}^*_w(\cCtwo, \cCone) - \hat{F}^*_w(\cCtwo, \tcCone) \right| \leq \frac{ \gamma }{B}.
+    \end{equation*}
+\end{lemma}
+\begin{proof}
+    First, note that if $x \not \in C$, then $F^*(C, \tilde{C}) < F^*(C, C_1)$.
+    Thus, any cluster not containing $x$ that does not match with $C_1$ will not match with $\tilde{C}$.
+    So, if $ x \not \in C$ and $C$ is not matched with $C_1$ then $F^*(C, \cCone) = F^*(C, \tcCone)$.
+    Thus, using Lemma~\ref{lem:one} we get
+    \begin{align*}
+        \left| \hat{F}^*_w(\cCtwo, \cCone) - \hat{F}^*_w(\cCtwo, \tcCone) \right| &= \left| \sum_{C \in \cCtwo} \frac{|C|}{B} \left( F^*(C, \cCone) - F^*(C, \tcCone) \right) \right| \\
+        & \leq \sum_{C \in \cCtwo} \frac{|C|}{B} \left| F^*(C, \cCone) - F^*(C, \tcCone) \right| \\
+        & \leq \frac{ \gamma }{B},
+    \end{align*}
+    and the proof is finished.
+\end{proof}
+
+Now, we can prove Theorem~\ref{thm:robust}.
+\begin{proof}[Proof of Theorem~\ref{thm:robust}] 
+    Due to symmetry, without loss of generality, we may assume one of the following four cases.
+    \begin{enumerate}
+        \item[1a.] $x \not \in O^{(1)}$ and is added to existing cluster $C_1$ to make clustering $\tcCone$.
+        \item[1b.] $x \in O^{(1)}$ and is added to existing cluster $C_1$ to make clustering $\tcCone$.
+        \item[2a.] $x \not \in O^{(1)}$ and makes a new cluster $\{x\}$ to make clustering $\hcCone$.
+        \item[2b.] $x \in O^{(1)}$ and makes a new cluster $\{x\}$ to make clustering $\hcCone$.
+    \end{enumerate}
+    Recall that $A = \sum_{C \in \cCone} |C|$ and $B = \sum_{C \in \cCtwo} |C|$.
+
+    %%%%%%%% Case 1 %%%%%%%%
+    \textbf{Case 1a}:
+    \begin{align*}
+        & \left| F^*_{wo}(\cCone, \cCtwo) - F^*_{wo}(\tcCone, \cCtwo) \right| \\
+        = & \left| 0.5 \left( \frac{|X \setminus O^{(1)}|}{|X|} \right) \hat{F}^*_w(\cCone, \cCtwo) + 0.5 \left( \frac{| X \setminus O^{(2)}|}{|X|} \right) \hat{F}^*_w(\cCtwo, \cCone) \right. \\
+        & \left. \qquad \qquad - 0.5 \left( \frac{|X \setminus O^{(1)}|}{|X|} \right) \hat{F}^*_w(\tcCone, \cCtwo) - 0.5 \left( \frac{|X \setminus O^{(2)}|}{|X|} \right) \hat{F}^*_w(\cCtwo, \tcCone) \right| \\
+        \leq & \frac{|X \setminus O^{(1)}|}{|X|} \frac{1}{A} + \frac{|X \setminus O^{(2)}|}{|X|} \frac{ \gamma }{B},
+    \end{align*}
+    by Lemmas~\ref{lem:two} and~\ref{lem:three}.
+    And, since $|X \setminus O^{(1)}| \leq A$, we conclude that
+    \begin{equation*}
+        \left| F^*_{wo}(\cCone, \cCtwo) - F^*_{wo}(\tcCone, \cCtwo) \right| \leq \bigO \left( \frac{1}{|X|} \max \left\{ 1, \frac{|X \setminus O^{(2)}| \gamma }{B} \right\} \right).
+    \end{equation*}
+
+    \textbf{Case 1b}:
+    First, we consider each direction of $\hat{F}^*_{wo}$ individually.     
+    \begin{align*}
+        & \left| \hat{F}^*_{wo}(\cCone, \cCtwo) - \hat{F}^*_{wo}(\tcCone, \cCtwo) \right| \\
+        = & \left| \frac{|O^{(1)}|}{|X|}F^*(O^{(1)}, O^{(2)}) + \frac{|X \setminus O^{(1)}|}{|X|}\hat{F}^*_w(\cCone, \cCtwo) \right. \\
+        & \qquad \qquad \left. - \frac{|\tilde{O}^{(1)}|}{|X|}F^*(\tilde{O}^{(1)}, O^{(2)}) - \frac{|X \setminus \tilde{O}^{(1)}|}{|X|}\hat{F}^*_w(\tcCone, \cCtwo) \right| \\
+        \leq & \frac{1}{|X|}F^*(O^{(1)}, O^{(2)}) + \frac{|O^{(1)}|-1}{|X|}\left|F^*(O^{(1)}, O^{(2)}) - F^*(\tilde{O}^{(1)}, O^{(2)})\right| \\
+        & \qquad \qquad + \frac{1}{|X|}\hat{F}^*_w(\tcCone, \cCtwo) + \frac{|X \setminus O^{(1)}|}{|X|} \left|\hat{F}^*_w(\cCone, \cCtwo) - \hat{F}^*_w(\tcCone, \cCtwo) \right| \\
+        = & \; \bigO \left( \frac{1}{|X|} \right).
+    \end{align*}
+    And for the other direction,
+    \begin{align*}
+        & \left| \hat{F}^*_{wo}(\cCtwo, \cCone) - \hat{F}^*_{wo}(\cCtwo, \tcCone) \right| \\
+        \leq & \frac{|O^{(2)}|}{|X|}\left| F^*(O^{(2)}, O^{(1)}) - F^*(O^{(2)}, \tilde{O}^{(1)})\right| + \frac{|X \setminus O^{(2)}|}{|X|}\left| \hat{F}^*_w(\cCtwo, \cCone) - \hat{F}^*_w(\cCtwo, \tcCone)\right|\\
+        = & \; \bigO \left( \frac{1}{|X|} \frac{|X \setminus O^{(2)}| \gamma}{B}\right).
+    \end{align*}
+    So together,
+    \begin{equation*}
+        \left| F^*_{wo}(\cCone, \cCtwo) - F^*_{wo}(\tcCone, \cCtwo) \right| = \bigO \left( \frac{1}{|X|} \max \left\{ 1, \frac{|X \setminus O^{(2)}| \gamma}{B} \right\} \right).
+    \end{equation*}
+
+    \textbf{Preliminaries for Case 2a and 2b}:
+    For these cases, we need to slightly alter the proofs of Lemmas~\ref{lem:two} and \ref{lem:three} for when $x$ creates a new cluster.
+    First, a similar bound to Lemma~\ref{lem:two}:
+    \begin{align*}
+        & \left| \hat{F}^*_{w}(\cCone, \cCtwo) - \hat{F}^*_{w}(\hcCone, \cCtwo) \right| \\
+        = & \left| \sum_{C \in \cCone} \frac{|C|}{A} F^*(C, \cCtwo) - \sum_{C \in \cCone} \frac{|C|}{A+1} F^*(C, \cCtwo) - \frac{1}{A+1} F^*(\{x\}, \cCtwo) \right| \\
+        \leq & \left( \sum_{C \in \cCone} \frac{1}{A(A+1)} + \frac{1}{A+1} F^*(\{x\}, \cCtwo)\right) \\
+        = & \; \bigO \left( \frac{1}{A} \right).
+    \end{align*}
+    And also a similar bound to Lemma~\ref{lem:three}.
+    In this case, if $x \not \in C$, then $F^*(C, \{x\}) = 0$ so $C$ will not match with $\{x\}$.
+    Let $\Gamma = |\{C \in \cCtwo : x \in \cCtwo\}|$
+    Thus, 
+    \begin{align*}
+        & \left|\hat{F}^*_w(\cCtwo, \cCone) - \hat{F}^*_w(\cCtwo, \hcCone)\right|\\
+        \leq & \sum_{C \in \cCtwo} \frac{|C|}{B} \left| F^*(C, \cCone) - F^*(C, \hcCone) \right| \\
+        \leq & \frac{\Gamma}{|B|}.
+    \end{align*}
+
+    \textbf{Case 2a}:
+    \begin{align*}
+        & \left| F^*_{wo}(\cCone, \cCtwo) - F^*_{wo}(\hcCone, \cCtwo) \right| \\
+        \leq & \frac{|X \setminus O^{(1)}|}{|X|}\left|\hat{F}^*_{w}(\cCone, \cCtwo) - \hat{F}^*_{w}(\hcCone, \cCtwo) \right| + \frac{|X \setminus O^{(2)}|}{|X|} \left| \hat{F}^*_w(\cCtwo, \cCone) - \hat{F}^*_w(\cCtwo, \hcCone) \right| \\
+        = & \bigO \left( \frac{1}{|X|} \max \left\{ 1, \frac{|X \setminus O^{(2)}| \Gamma }{B} \right\} \right).
+    \end{align*}
+
+    \textbf{Case 2b}:
+    \begin{align*}
+        & \left| F^*_{wo}(\cCone, \cCtwo) - F^*_{wo}(\hcCone, \cCtwo) \right| \\
+        \leq & \frac{1}{|X|}F^*(O^{(1)}, O^{(2)}) + \frac{|O^{(1)}|-1}{|X|}\left|F^*(O^{(1)}, O^{(2)}) - F^*(\hat{O}^{(1)}, O^{(2)})\right| \\
+        & \qquad + \frac{1}{|X|}\hat{F}^*_w(\hcCone, \cCtwo) + \frac{|X \setminus O^{(1)}|}{|X|} \left|\hat{F}^*_w(\cCone, \cCtwo) - \hat{F}^*_w(\hcCone, \cCtwo)\right| \\
+        & \qquad + \frac{|O^{(2)}|}{|X|}\left|F^*(O^{(2)}, O^{(1)}) - F^*(O^{(2)}, \hat{O}^{(1)}) \right| + \frac{|X \setminus O^{(2)}|}{|X|}\left| \hat{F}^*_w(\cCtwo, \cCone) - \hat{F}^*_w(\cCtwo, \hcCone)\right| \\
+        = & \; \bigO \left( \frac{1}{|X|} \max \left\{ 1, \frac{|X \setminus O^{(2)}| \Gamma}{B} \right\} \right).
+    \end{align*}
+\end{proof}
 
 
-\section{Extensions to Hypergraphs}
-    \subsection{Hypergraph Modularity}
-    \subsection{H-ABCD}
-    \subsection{Hypergraph Louvain}
-    \subsection{Hypergraph Embedding?}
-    \subsection{Comparisons}
+\section{Experiments}
+\subsection{Intuitive Behaviour}
+In this section, we recreate and extend an experiment from Gates et al.~\cite{ecc} to check for common biases in the behaviour of $F^*_{wo}$.
+The original experiment consists of three series of clustering comparisons that have an expected intuitive behaviour.
+None of the scenarios have outliers nor overlapping clusters, but a good measure should still match our intuitions for partitions.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{New Clustering Methods?}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+For the first experiment, a clustering is created from $1024$ objects with 32 clusters of each of size $32$.
+The second clusterings starts as a copy of the first, but a fraction of its objects have their cluster shuffled.
+We expect that as the fraction shuffled increases, the similarity should be monotone decreasing to some non-zero value.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Clusterings as Hypergraphs}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    \subsection{Framework}
-    \subsection{Comparison Metrics}
-    \subsection{Temporal Experiment?}
+In the second scenario, the first clustering is again $1024$ objects split into $32$ clusters of size $32$.
+The second clustering starts with as a different clustering (randomly selected) with $32$ clusters of size $32$, and evolves by reassigning a random object to a new cluster chosen proportional to the cluster sizes.
+As the process proceeds, we expect the cluster sizes to become more heterogeneous (a few large clusters, many small clusters) and we again expect the similarity to be monotone decreasing to some non-zero value.
 
+Finally, we test for bias in the number of clusters.
+The first clustering has $1024$ objects split into $8$ clusters of size $128$, and the second clustering is chosen uniformly from partitions of $1024$ objects into $k$ equally sized clusters.
+As $k$ increases, we expect the similarity to be monotone decreasing, and for the similarity to be almost $0$ in the extreme case of $1024$ clusters of size $1$.
+
+As seen in Figure \ref{fig:experiment}, the behaviour of $F^*_{wo}$ matches our intuition in each experiment.
+
+\begin{figure*}[!t]
+    \centering
+    \includegraphics[width=0.9\linewidth]{figures/intuition1.pdf}
+    \caption{
+        Recreation of the experiment in Figure 2 of \cite{ecc} with $F^*_{wo}$.
+        Each column represents one scenario, including a visual of the scenario, the intuitive behaviour of a similarity measure in this scenario, and the actual behaviour of several measures in each row respectively.
+        Each line is the average of $100$ simulations and the shaded region (usually too small to appear) covers plus or minus one standard deviation.
+        In each scenario, the proposed $F^*_{wo}$ measure matches our intuition.
+    }
+    \label{fig:experiment}
+\end{figure*}
+
+Next, we test two more scenarios that involve either outliers or overlapping clusters.
+To generate these clusterings, we use the method from phase 1 of \abcdoo~\cite{abcdoo_paper}, previously described in Section \ref{sec:abcdoo_construction}.
+
+In the fourth scenario, for $25$ samples, we generate an underlying geometric layer and initial partition, and then compare various values of $\eta$ to a reference clustering where $\eta = 3$.
+Since the second stage of the algorithm is deterministic, we expect perfect similarity when $\eta = 3$ and decreasing similarity as $|\eta - 3|$ increases.
+
+In the fifth scenario, we reverse second stage of the method and shrink each cluster around its center of mass (this can be thought of as setting $\eta < 1$).
+Since we start with a partition, there will be outliers, but no overlapping clusters.
+We compare to a reference clustering corresponding to $\eta = 0.5$.
+This time we test two out of five measures, as only $F^*_{wo}$ is explicitly defined for outliers, and ECS can accommodate outliers by treating them as isolated vertices in the cluster-induced element graph.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.9\linewidth]{figures/intuition2.pdf}
+    \caption{
+        Comparing comparison measure behaviour on intuitive scenarios when overlaps or outliers are present.
+        The top row is the scenario with overlapping clusters, and the second row has outliers; the columns, from left to right, show a visual of the scenario, the intuitive behaviour, and the actual behaviour of each method.
+    }
+    \label{fig:experiment2}
+\end{figure}
+
+Once again, as seen in Figure \ref{fig:experiment2}, $F^*_{wo}$ behaves as intuition would suggest.
+The ECS also follows the intuition in both scenarios, although the similarity for highly overlapping clusterings (large $\eta$) is rather high.
+
+\subsection{Graph Aware Clustering Comparison}
+Since overlapping clusters are often necessary to fully capture the communities in complex networks~\cite{miningcomplexnetworks}, we provide a short discussion about incorporating the structure of the graph when comparing graph clusterings.
+In particular, Poulin and Th\'{e}berge~\cite{gam} propose several graph-aware extensions of popular partition measures by transforming a partition of the vertices to a binary edge classification (inter-part versus intra-part).
+In the case of overlapping clusters, we cannot use a binary edge classification, but we can create an edge clustering from a node clustering.
+For a graph $G$ with vertices $V$ and edges $E$, and a clustering $\cC$ of the vertices, we define the edge clustering induced by $\cC$ as
+\begin{equation}
+    \cE_G(\cC) = \{ \{uv \in E: u,v \in C\} \: \forall \: C \in \cC\}.
+\end{equation}
+We can also define the vertex clustering induced by an edge clustering, as is commonly used by edge clustering algorithms~\cite{linkcoms},
+\begin{equation}\label{eq:edge_clustering_projection}
+    \cC_G(\cE) = \{ \{v \in V: \exists \: uv \in C\} \: \forall \: C \in \cE\}.
+\end{equation}
+When evaluating the performance of a graph clustering algorithm, we can compare clusterings from both the vertex and edge perspectives.
+However, as could be the case when evaluating a linkage based edge clustering algorithm~\cite{linkcoms,hslc}, an edge cluster may span a vertex cluster while only covering a small fraction of the internal edges.
+To remedy this, we can define the closure of an edge clustering $\bar{\cE}_G$ to add these internal edges back to the edge cluster, which can be computed as $\bar{\cE}_G = \cE_G(\cC_G(\cE))$.
+When using a graph-aware measure for comparing an edge clustering algorithm to a ground truth vertex clustering, we recommend using the closed edge clustering since the internal edges will be included in the edge clustering induced by the ground truth.
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=0.8\linewidth]{figures/fig3.pdf}
+    \caption{
+        An experiment comparing graph aware clustering comparison, similar to that of Figure 5 from \cite{gam}.
+        We use three resolutions ($0.5$, $1.0$, and $3.75$ shown in red, green, and yellow respectively) of the Leiden clustering algorithm on ABCD graphs with 2000 vertices and show, from left to right, the similarity of each detected vertex clustering to the ground truth vertex clusters, the similarity of the detected induced edge clustering to the ground truth induced edge clusters, and the number of clusters
+        The solid line represents the average over 5 samples and the shaded region covers plus or minus one standard deviation.
+    }
+    \label{fig:gam}
+\end{figure}
+
+In Figure~\ref{fig:gam}, we evaluate three resolutions of the Leiden~\cite{leiden} graph clustering algorithm on synthetic \abcd~\cite{abcd} graphs in an experiment similar to that in Figure~5 of~\cite{gam}.
+The different resolutions produce different cluster granularities, with $3.75$ giving a fine clustering (many small clusters), $0.5$ producing a coarse clustering (few large clusters), and the default resolution of $1.0$ producing clustering with medium-sized clusters.
+While we see the same ranking from both vertex and edge perspectives for low noise (up to $\xi \approx 0.5$), the rankings are inverted for very high $\xi$.
+In a very noisy graph, most of the edges are inter-cluster, and thus the ground truth edge clustering has many outliers.
+Any fine partition will also have mostly inter-cluster edges, so it is similar to the ground truth from an edge clustering perspective, even if the vertex clusterings are not similar.
+For evaluating graph clustering algorithms, we recommend analyzing performance from both perspectives to strengthen the conclusions.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Benchmark Community Detection Algorithms}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+In this chapter, we use the tools developed in Chapters \ref{chap:abcdoo} and \ref{chap:fstar} to benchmark the performance of community detection.
+First, we briefly describe three algorithms for community detection with overlaps and outliers.
+We refer the reader to \cite{fortunatoreview} or \cite{overlapreview} for a comprehensive review of community detection.
+
+\section{Community Detection Algorithms}
+\subsection{Egosplit + CAS}
+The EgoSplitting paradigm creates an auxiliary graph $G'$ with one or more copies of each vertex in $G$ on which we run a standard partitioning algorithm.
+More formally, define the egonet of a vertex $v$ as the subgraph induced by the neighborhood of $v$, written $G[N(v)]$ (note that $v$ is not in its egonet).
+The EgoSplit algorithm proceeds as follows:
+\begin{enumerate}
+    \item For each $v \in V(G)$, run a community detection algorithm on the egonet of $v$. Let $P_v = \{P_1, P_2, \dots P_{t(v)}\}$ be the resulting partition. For $u \in N(v)$, let $\ell(u, v) = i$ such that $u \in P_i$.
+    \item Create $G'$ as an empty graph with $\sum_{v \in V(G)} t(v)$ vertices, with each $v \in V(G)$ associated to vertices $v_1, v_2, \dots v_{t(v)}$ in $V(G')$.
+    \item For each edge $uv \in E(G)$ add a corresponding edge to $E(G')$ between $u_{\ell(v, u)}$ and $v_{\ell(u, v)}$.
+    \item Run a community detection algorithm on $G'$. Let $P = \{P_1, P_2, \dots\}$ be the resulting partition.
+    \item For each $v \in V(G)$, assign $v$ to community $i$ if any of $v_1, v_2, \dots v_{t(v)}$ are in $P_i$.
+\end{enumerate}
+For community detection on the egonets, we use Label Propagation \cite{nandini2007}, and for community detection on $G'$ we use ECG~\cite{ecg}.
+As described in \cite{egosplit}, we also drop all communities of size less than $5$ to improve the stability and performance of the algorithm.
+
+While the egosplitting frameworks allows for overlapping communities (and possibly a few outliers after dropping small communities), since the ECG algorithm does not allow outliers, some vertices may be very weakly attached to their communities.
+A recent paper \cite{cas} proposed post-processing communities using a set of Community Association Scores (CAS).
+The best performing score was the Normalized Internal Edge Fraction (NIEF), defined as
+\begin{equation*}
+    \mathrm{NIEF}(v, C) := \max\left\{ \mathrm{IEF}(v, C) - \frac{vol(C)}{vol(V)} , 0 \right\} \,.
+\end{equation*}
+is motivated as the internal edge fraction corrected for community size.
+A simple post-processing algorithm is to accept a user-defined threshold $\tau$, and add a vertex $v$ to a community $C$ if $\mathrm{NIEF}(v, C) > \tau$ or remove $v$ from $C$ if $\mathrm{NIEF}(v, C) < \tau$.
+We repeatedly perform the post-processing until the communities stablise (or we get stuck in a 2-step loop of adding then removing a few vertices, in which case we terminate).
+Pseudocode of the post-processing algorithm in shown in Algorithm \ref{alg:postprocess}.
+In the following experiments, we fix $\tau = 0.5$.
+\begin{algorithm}
+    \caption{CAS Post-processing Algorithm}
+    \label{alg:postprocess}
+    \begin{algorithmic}
+    \Ensure $\cC = Array[0:|V|-1] \; with \; C[v] = \{i: v \in C_i\}$
+    \Function{PostProcess}{$\cC, G, \tau, only\_remove, recursive$}
+    \State $last2round = \{\}$
+    \State $lastround = \{\}$
+    \State $done \gets False$
+    \State $round = 1$
+    \While{$not \; done \; and round \leq 100$}
+        \State $\cC' \gets Array[0:|V|-1] \; of \; \{\}$
+        \State $done \gets True$
+        \For{$v \in V$}
+            \State $potentialcoms \gets \cC[v]$
+            \If{$not \; only\_remove$}
+                \For{$u \in N(v)$}
+                    \State $potentialcoms \gets potentialcoms \cup \cC[u]$
+                \EndFor
+            \EndIf
+            \For{$c \in potentialcoms$}
+                \State $cas \gets CAS(v, c, G)$
+                \If{$cas \geq \tau$}
+                    \State $\cC'[v] \gets \cC'[v] \cup \{c\}$
+                    \State $done \gets False$
+                \EndIf
+            \EndFor
+        \EndFor
+        \State $thisround = \{v: \cC[v] \neq \cC'[v]\}$
+        \If{$thisround = last2round$}
+            \State $done = True$
+        \EndIf
+        \If{$not \; recursive$}
+            \State $done = True$
+        \EndIf
+        \State $last2round \gets lastround$
+        \State $lastround \gets thisround$
+        \State $\cC \gets \cC'$
+        \State $round \gets round + 1$
+    \EndWhile\\
+    \Return{$\cC$}
+    \EndFunction
+    \end{algorithmic}
+\end{algorithm}
+
+\subsection{LC + HSLC}
+This method combines the Link Communities (LC) edge clustering scores with Hierarchical Sinlge Linkage Clustering (HSLC) \cite{hslc} to allow for outliers and overlapping communities.
+LC defines a similarity measure between adjacent edges by considering the similarity of their neighborhoods, stored as the weights on the line graph.
+The line graph $LG$ of a graph $G$ has vertices $V(LG) = E(G)$ and edges $E(LG) = \{ef: e \text{ and } f \text{ are adjacent in} G \}$.
+For adjacent edges $e = uv$ and $f = vw$, the edge similarity $s$ in LC is the jaccard similarity of the neighborhood of the non-central vertex;
+\begin{equation*}
+    s(e,f) = \frac{|N(u) \cap N(w)|}{|N(u) \cup N(w)|}.
+\end{equation*}
+
+Next, hierarchical single linkage clustering is applied to the weighted line graph.
+The algorithm is taken from HDBSCAN \cite{hdbscan,hdbscancode}, a popular density based vector clustering algorithm and adapted for arbitrary similarity graphs.
+
+First, a single-linkage dendrogram is built from the similarity graph $LG$.
+The clusters at cut level $\lambda$ are the connected components of the subgraph with all vertices and edges $\{ef \in E(LG) : s(e, f) \geq \lambda\}$.
+
+This dendrogram is generally too complex to visualize (consider that when $\lambda \to \infty$ every object has its own cluster), so to condense the dendrogram so that it only tracks significant clusters, a parameter $m_s$ is introduced to control the minimum cluster size.
+When traversing the dendrogram top-down, if a cluster is split, then one of the following three cases will occur:
+\begin{enumerate}
+    \item The cluster splits into several clusters, each with less than $m_s$ vertices. We say the cluster has disappeared.
+    \item The cluster splits into several clusters, at least two of which have at least $m_s$ vertices. We say all sub-clusters with at least $m_s$ vertices are significant and different from the original.
+    \item The cluster splits into one cluster with at least $m_s$ vertices and one or more clusters with less than $m_s$ vertices. We say the original cluster shrinks, and the largest sub-cluster retains the name of the original cluster. The other clusters become outliers.
+\end{enumerate}
+The condensed dendrogram will have far fewer clusters, and naturally defines a cut level at which every cluster will disappear (for $m_s > 1$).
+
+Finally, even though the condensed dendrogram is practical for investigation, many applications still require a single set of clusters.
+HDBSCAN \cite{hdbscan} defines a persistence score for each cluster, and then provides an algorithm to find the set of non-overlapping clusters to maximize total persistence.
+For a cluster $C_i \subseteq K$, define the death of the cluster as $\lambda_{min}(C_i) = \min\{\lambda: C_i \text{ exists} \}$.
+Also, define the contribution of each object $k_j \in C_i$ as $\lambda_{max}(k_j, C_i) = \max\{\lambda : k_j \in C_i\}$.
+Then, the persistence of cluster $C_i$ is given by the equation
+\begin{equation}
+    \sigma(C_i) = \sum_{k_j \in C_i} \left(\lambda_{max}(k_j, C_i) - \lambda_{min}(C_i)\right).
+\end{equation}
+The optimal (and returned) flat clustering is the set of clusters $\mathcal{C}$ that maximizes $\sum_{C_i \in \mathcal{C}} \sigma(C_i)$ subject to $C_i \cap C_j = \emptyset \;\forall\; C_i, C_j \in \mathcal{C}$.
+
+Since we run HSLC on $LG$, it returns a set of edge clusters.
+We project the edge cluster to the vertices by including a vertex in a cluster if it is incident to at least one edge in that cluster (recall Equation \ref{eq:edge_clustering_projection}).
+
+\subsection{OSLOM}
+The Order Statistics Local Optimization Method (OSLOM) clustering algorithm \cite{oslom} is a complicated method that uses a statistical significance \cite{communitysignificance} based CAS score to create a local clustering \cite{localclustering} algorithm.
+Their CAS score is derived from the probability that a vertex not in a community would have at least the same number of connections to the community if the graph was rewired following the configuration model.
+This score is used to develop a local clustering algorithm that finds an optimially significant community containing a given seed vertex.
+Many such communities are detected and combined or removed (if they overlap too much) according to several significance tests and preset thresholds.
+We refer to \cite{oslom} for a detailed explanation of the algorithm and motivations, and \cite{oslomcode} for the code used in the following experiments.
+
+\section{Synthetic Data}
+For a comprehensive benchmark where we trust the ground truth, we use a large collection of graphs from the \abcdoo\ model.
+We vary $\xi \in [0.2, 0.6]$ and $\eta \in [1,3]$, and fix $n=10000, s_0=1000, \delta=5, \Delta=1000, \gamma=2.5, s=25, S=1000, \beta=1.5, d=8$, and $\rho=0.25$.
+For each set of parameters, we generate $10$ sample graphs and report the mean $F^*_{wo}$ of the detected clustering compared to the ground truth.
+
+3 heatmaps of xi vs eta.
+
+Easier comparison via xi vs F* and eta vs F*
+
+\section{Real Data}
+For real graph data with known ground truth communities, we use the DBLP, Amazon, and Youtube graphs from the SNAP graph repository \cite{snap} that were introduced in Section \ref{sec:graph_properties}.
+Statistics about the graphs can be found in Table \ref{tab:real_graph_params}, except we use the full Youtube graph consisting of an additional $1092520$ outlier vertices for a total $n = 1134890$.
+
+In our first experiment (Figure \ref{fig:real_full_comparison}), we run each community detection algorithm on each graph and use $F^*_{wo}$ to compare the detected clusters with the ground truth communities.
+\rc{analyze figure}
+
+However, \cite{yang2012defining} found that most of the ground truth communities have very low intrinsic quality, and would be unlikely to be detected even (or especially) by a good algorithm.
+Intrinsic community quality is a type of function that attempts to quantify how good a community is looking only at the structure of the graph.
+There are many particular functions, we refer to \cite{yang2012defining} for a review, but they found that each of these graph have about $5000$ communities that score highly on a variety of intrinsic measures.
+They have published alternate files for the ground truth communities that consist only of those with the top 5000 intrinsic measures.
+
+As a second experiment, we test the ability of each community detection algorithm to successfully find these high quality communities.
+We evaluate the detected communities $\cC$ with the top 5000 ground truth communities $\hat{\cC}$ using $\hat{F}^*_{w}(\hat{\cC}, \cC)$.
+Each of the high quality ground truth communities will look for a match in the detected communities, but we do not insist that each detected community is in the ground truth, nor that all the other vertices are outliers.
+The results of this experiment are shown in Figure \ref{fig:real_top_comparison}.
+\rc{Analyze figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Conclusion}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+In this thesis, we developed two tools that when combined, allow for extrinsic benchmarking of community detection algorithms that may have overlaps and outliers.
+First, the \abcdoo\ model provides a synthetic playground that can recreate an overlap structure similar to those seen in real graphs and allows for a smooth increase in detection difficulty.
+Next, we proposed a clustering comparison measure that is well-defined for clustering with overlaps and outliers, and checked that it behaves intuitively.
+Finally, we used these newly developed tools to evaluate three community detection methods.
+We hope these tools encourage further development of community detection algorithms that go beyond partitions of the vertices.
 
 \newpage
 \addcontentsline{toc}{chapter}{Appendices}
@@ -232,28 +1293,5 @@ Maximum of 150 words for a MSc thesis.
 
 \end{appendices}
 }
-
-\typeout{**************************************************************************}
-\typeout{}
-\typeout{This sample file includes nomenclature (a List of Symbols). Please run:}
-\typeout{     makeindex ryesample.nlo -s nomencl.ist -o ryesample.nls}
-\typeout{}
-\typeout{}
-\typeout{This sample file includes a glossary. Please run:}
-\typeout{   makeglossaries ryesample}
-\typeout{}
-\typeout{}
-\typeout{This sample file includes an index. Please run:}
-\typeout{   makeindex ryesample}
-\typeout{}
-\typeout{}
-\typeout{This sample file includes a bibliography. Please run:}
-\typeout{   bibtex ryesample}
-\typeout{}
-\typeout{Reprocess the document using LaTeX again, two more times to include the}
-\typeout{above sections.}
-\typeout{}
-\typeout{**************************************************************************}
-
 
 \end{document}
