@@ -220,7 +220,7 @@ There have been a variety of attempts to exactly define a community, or score th
 The most popular and well studied ideas of community focus on partitions \cite{modularity,louvain,lfr}, a clustering where every vertex belongs to exactly one cluster.
 However, especially in graph data, partitions are not always sufficient to describe the intuitive clusters (Figure \ref{fig:overlap_ex}).
 In particular, we extend the notion of a clustering to allow for outliers (vertices may belong to no clusters) and overlaps (vertices may belong to multiple communities).
-There are some community detection algorithms for this regime \cite{oslom,hslc}, but the tools for evaluating and comparing these algorithms are under developed.
+There are some community detection algorithms for this regime \cite{oslom,hslc}, but evaluating and comparing these algorithms can be difficult.
 
 \begin{figure}[H]
     \centering
@@ -229,7 +229,7 @@ There are some community detection algorithms for this regime \cite{oslom,hslc},
     \label{fig:overlap_ex}
 \end{figure}
 
-In this thesis, we develop tools for the extrinsic benchmarking of community detection algorithms that allow for outliers and overlaps.
+This thesis develops tools for the extrinsic benchmarking of community detection algorithms that allow for outliers and overlaps.
 An extrinsic benchmark evaluates the ability of a community detection algorithm to find a ground truth clustering that is believed to be correct.
 The first component to an extrinsic benchmark is the data.
 In real networks, the ground truth clustering is often determined from meta-data that is suspected to produce communities but is not given to the detection algorithm \cite{snap}.
@@ -239,7 +239,7 @@ In Chapter \ref{chap:abcdoo}, we propose \abcdoo, an extension of the Artificial
 The second component is a method to compare the similarity of the detected clustering to the ground truth clustering.
 Many methods exist for partitions \cite{ari,nmi,ami}, and some have extended for overlaps \cite{omega,onmi,ecc}, but to the best of our knowledge none have explicitly considered outliers.
 Chapter \ref{chap:fstar} develops a new method based on a set-matching framework \cite{setmatching} that includes a novel outlier comparison term.
-Finally, in Chapter \ref{chap:benchmark}, we use these tools to benchmark three community detection algorithms.
+Finally, Chapter \ref{chap:benchmark} briefly reviews three community detection algorithms and uses the newly developed tools to evaluate their performance.
 
 The bulk of this thesis is based on results from the following papers:
 \begin{itemize}
@@ -258,7 +258,7 @@ Finally, written during the program but not mentioned in the thesis are the foll
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{The Artificial Benchmark for Community Detection with Overlaps and Outliers (\abcdoo)} \label{chap:abcdoo}
+\chapter{The Artificial Benchmark for Community Detection with Overlaps and Outliers} \label{chap:abcdoo}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 To support the development and analysis of overlapping community detection algorithms, a large and diverse catalogue of networks with ground-truth communities is required for testing, tuning and training.
 Unfortunately, there are few such datasets with communities identified and labelled.
@@ -334,8 +334,6 @@ The model first labels $n$ nodes as $(v_i, i \in [n])$ and endowing each $v_i$ w
 It then iteratively choose two unpaired half-edges uniformly at random from the set of pairs of remaining half-edges, and pair them together to form an edge.
 This process yields a multi-graph $G_n \sim \mathrm{CM}(\textbf{d})$ on $n$ nodes, where $G_n$ is allowed self-loops and multi-edges.
 See~\cite{bender1978asymptotic,wormald1984generating,wormald1999models} for related models and results.
-
-\rc{Define Rewiring?}
 
 \subsection{Parameters}
 Table~\ref{tab:parameters} summarizes the parameters that govern the \abcdoo\ model.
@@ -1157,7 +1155,7 @@ Any fine partition will also have mostly inter-cluster edges, so it is similar t
 For evaluating graph clustering algorithms, we recommend analyzing performance from both perspectives to strengthen the conclusions.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Benchmark Community Detection Algorithms}
+\chapter{Benchmarking Community Detection Algorithms} \label{chap:benchmark}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 In this chapter, we use the tools developed in Chapters \ref{chap:abcdoo} and \ref{chap:fstar} to benchmark the performance of community detection.
 First, we briefly describe three algorithms for community detection with overlaps and outliers.
@@ -1283,16 +1281,45 @@ For a comprehensive benchmark where we trust the ground truth, we use a large co
 We vary $\xi \in [0.2, 0.6]$ and $\eta \in [1,3]$, and fix $n=10000, s_0=1000, \delta=5, \Delta=1000, \gamma=2.5, s=25, S=1000, \beta=1.5, d=8$, and $\rho=0.25$.
 For each set of parameters, we generate $10$ sample graphs and report the mean $F^*_{wo}$ of the detected clustering compared to the ground truth.
 
-3 heatmaps of xi vs eta.
+Figure \ref{fig:heatmap_grid} shows the performance of each algorithm as a heatmap.
+As expected, each algorithm performs quite well when both $\xi$ and $\eta$ are small (especially when $\eta=1$ and there is no overlap), but performance tends to decrease as either parameter increases.
+The exception is when comparing the induced edge clusterings for EGOSPLIT+CAS and OSLOM, in which case the performance tends to increase as $\xi$ increases, indicating these algorithms find small clusters or lots of outliers.
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{figures/heatmap_grid.pdf}
+    \caption{
+        Evaluating the performance of each algorithm with respect to variable $\xi$ and $\eta$.
+    }
+    \label{fig:heatmap_grid}
+\end{figure}
 
-Easier comparison via xi vs F* and eta vs F*
+A heatmap gives a comprehensive overview of one algorithm, but it can be difficult to quickly compare the algorithms.
+To facilitate a quick comparison, Figure \ref{fig:linegraph_grid} plots all three algorithms on one graph by fixing one of $\xi$ or $\eta$.
+We find that no one algorithm is always best, but the OSLOM algorithm does perform better for small $\xi$ or small $\eta$.
+\begin{figure}
+    \centering
+    \includegraphics[width=0.9\linewidth]{figures/linegraph_grid.pdf}
+    \caption{
+        Evaluating the performance of each clustering algorithm with fixed $\eta = 1.5$ (left column) or $\xi = 0.3$ (right column).
+    }
+    \label{fig:linegraph_grid}
+\end{figure}
 
 \section{Real Data}
 For real graph data with known ground truth communities, we use the DBLP, Amazon, and Youtube graphs from the SNAP graph repository \cite{snap} that were introduced in Section \ref{sec:graph_properties}.
 Statistics about the graphs can be found in Table \ref{tab:real_graph_params}, except we use the full Youtube graph consisting of an additional $1092520$ outlier vertices for a total $n = 1134890$.
+We were unable to run LC+HSLC on the full Youtube graph since the linegraph has over one billion edges.
 
-In our first experiment (Figure \ref{fig:real_full_comparison}), we run each community detection algorithm on each graph and use $F^*_{wo}$ to compare the detected clusters with the ground truth communities.
-\rc{analyze figure}
+In our first experiment (Figure \ref{fig:real_all}), we run each community detection algorithm on each graph and use $F^*_{wo}$ to compare the detected clusters with the ground truth communities.
+None of the algorithms perform well on the DBLP or Amazon graphs, and EGOSPLIT+CAS performs well on Youtube.
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{figures/real_all.pdf}
+    \caption{
+        Ability of each community detection algorithm to match the full ground truth clustering on real graph datasets.
+    }
+    \label{fig:real_all}
+\end{figure}
 
 However, \cite{yang2012defining} found that most of the ground truth communities have very low intrinsic quality, and would be unlikely to be detected even (or especially) by a good algorithm.
 Intrinsic community quality is a type of function that attempts to quantify how good a community is looking only at the structure of the graph.
@@ -1303,7 +1330,20 @@ As a second experiment, we test the ability of each community detection algorith
 We evaluate the detected communities $\cC$ with the top 5000 ground truth communities $\hat{\cC}$ using $\hat{F}^*_{w}(\hat{\cC}, \cC)$.
 Each of the high quality ground truth communities will look for a match in the detected communities, but we do not insist that each detected community is in the ground truth, nor that all the other vertices are outliers.
 The results of this experiment are shown in Figure \ref{fig:real_top_comparison}.
-\rc{Analyze figure}
+
+In this experiment, the EGOSPLIT+CAS algorithm performs the best on all three graphs and for both node and edge based comparisons.
+The scores are still quite poor (less than 0.25), which means the high scores on the Youtube graph in the previous experiment were due to correctly finding outliers.
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{figures/real_top.pdf}
+    \caption{
+        Ability of each clustering algorithm to find the top 5000 ground truth communities on real graph datasets.
+    }
+    \label{fig:real_top}
+\end{figure}
+We draw a tentative conclusion that EGOSPLIT+CAS is performing the best on the real datasets, and note this is in contrast to the inconclusive results from the synthetic experiments.
+However, none of the algorithms are performing very well, and there is lots of room for improvement.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Conclusion}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
