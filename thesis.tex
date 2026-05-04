@@ -232,24 +232,24 @@ There are some community detection algorithms for this regime \cite{oslom,hslc},
 This thesis develops tools for the extrinsic benchmarking of community detection algorithms that allow for outliers and overlaps.
 An extrinsic benchmark evaluates the ability of a community detection algorithm to find a ground truth clustering that is believed to be correct.
 The first component to an extrinsic benchmark is the data.
-In real networks, the ground truth clustering is often determined from meta-data that is suspected to produce communities but is not given to the detection algorithm \cite{snap}.
+In real networks, the ground truth clustering is often determined from meta-data that is not given to the detection algorithm but is suspected to produce communities \cite{snap}.
 However, creating these ground truth clustering is difficult, and it is not always clear that the ground truth communities actually exist in the data \cite{yang2012defining}.
 Thus, we use synthetic data that is generated with a known community structure \cite{lfr,lfro,abcd,abcdo}.
-In Chapter \ref{chap:abcdoo}, we propose \abcdoo, an extension of the Artificial Benchmark for Community Detection with Outliers (\abcdo) model to allow for overlapping communities. 
+In Chapter \ref{chap:abcdoo}, we propose \abcdoo, an extension of the Artificial Benchmark for Community Detection with Outliers (\abcdo) model \cite{abcdo,abcd} to allow for overlapping communities. 
 The second component is a method to compare the similarity of the detected clustering to the ground truth clustering.
 Many methods exist for partitions \cite{ari,nmi,ami}, and some have extended for overlaps \cite{omega,onmi,ecc}, but to the best of our knowledge none have explicitly considered outliers.
-Chapter \ref{chap:fstar} develops a new method based on a set-matching framework \cite{setmatching} that includes a novel outlier comparison term.
+Chapter \ref{chap:fstar} develops a new method based on a set-matching framework \cite{setmatching} and includes an explicit outlier comparison term.
 Finally, Chapter \ref{chap:benchmark} briefly reviews three community detection algorithms and uses the newly developed tools to evaluate their performance.
 
-The bulk of this thesis is based on results from the following papers:
+The bulk of this thesis is based on the following papers:
 \begin{itemize}
-    \item ``The Artificial Benchmark for Community Detection with Outliers and Overlapping Communities ({ABCD}+o$^2$)'' \cite{abcdoo_paper} has been accepted for publication in the Journal of Complex Networks. A preliminary version \cite{abcdoo_conference} was also published in the Proceedings of the 20th Workshop on Modelling and Mining Networks (WAW2025). The authors contributed equally to the results.
+    \item ``The Artificial Benchmark for Community Detection with Outliers and Overlapping Communities ({ABCD}+o$^2$)'' \cite{abcdoo_paper} has been accepted for publication in the Journal of Complex Networks. A preliminary version \cite{abcdoo_conference} was published in the Proceedings of the 20th Workshop on Modelling and Mining Networks (WAW2025). The authors contributed equally to the results.
     \item ``A Pragmatic Method for Comparing Clusterings with Overlaps and Outliers'' \rc{is under review somewhere.} Ryan DeWolfe was the lead author, responsible for the idea, implementation, experiments, and initial draft.
 \end{itemize}
-It also uses algorithms developed during the program and presented in the following papers:
+It also uses community detection algorithms developed during the program and presented in the following papers:
 \begin{itemize}
     \item ``Improving Community Detection via Community Association Strength Scores'' \cite{cas} published in the Proceedings of the 20th Workshop on Modelling and Mining Networks (WAW2025). The authors contributed equally to the results.
-    \item ``Hierarchical Single-Linkage Clustering for Community Detection with Overlaps and Outliers'' \cite{hslc} published in the Proceedings of the 14th International Conference on Complex Networks and their Applications (COMPLEXNETWORKS2025). Ryan DeWolfe is the sole author.
+    \item ``Hierarchical Single-Linkage Clustering for Community Detection with Overlaps and Outliers'' \cite{hslc} published in the Proceedings of the 14th International Conference on Complex Networks and their Applications (COMPLEX NETWORKS 2025). Ryan DeWolfe is the sole author.
 \end{itemize}
 Finally, written during the program but not mentioned in the thesis are the following papers:
 \begin{itemize}
@@ -755,39 +755,110 @@ The second necessary component for extrinsic validity benchmarks is a method to 
 In this chapter, we use a set-matching framework \cite{setmatching} and the $F^*$ score \cite{f*_hand} to define a method for comparing clusterings that could have overlaps or outliers.
 The method is simple, computationally efficient, and exhibits several intuitive properties one would expect in a comparison measure.
 
+For a set of objects $X = \{x_1, x_2, \ldots, x_n\}$, we define a \textit{clustering} as set of non-empty subsets of $X$.
+We call each element of a clustering a \textit{cluster}.
+Note that with this definition, each cluster in a clustering is distinct, and the empty set cannot be a cluster.
+However, we allow the clustering itself to be the empty set.
+
 \section{Existing Options}\label{sec:related}
 Comparing partitions is a well-studied problem, and there are a wide variety of measures that are used~\cite{comparisonreview}, which can be broadly classified as either pair-counting, information theoretic, or set-matching~\cite{setmatching}.
-In this section, we review some extensions to overlapping clusterings, although, to the best of our knowledge, none have explicitly considered outliers.
+In this section, we review some extensions to overlapping clusterings and discuss the so-called \textit{problem of matching}.
 
+\subsection{Omega Index}
 The \textit{Omega} index~\cite{omega} extends the pair-counting Adjusted Rand Index (ARI)~\cite{ari} by extending the contingency table from agree versus disagree to counting the number of clusters in common.
-This extension is reasonable and is equivalent to the ARI for partitions, but is quite harsh since it does not detect any similarity if a pair of objects does not share the exact same number of clusters in both clusterings.
-Furthermore, the non-adjusted version of the Omega index suffers from the same issues as the non-adjusted Rand index: values tend to be large, even for random clusterings.
-The adjustment proposed implicitly assumes a null-model for generating random clusterings, the choice of which has been shown to have an effect for comparing partitions~\cite{partition_models}, and generally requires careful consideration of the assumptions when extending beyond partitions~\cite{fuzzy_models}.
+The adjusted index $\Omega$ consists of an unadjusted index $\omega$ that is ``corrected'' for agreement produced by random clustering via
+\begin{equation*}
+    \Omega(\cCone, \cCtwo) = \frac{\omega(\cCone, \cCtwo) - \E[\omega(\cCone, \cCtwo)]}{\max\{\omega\} - \E[\omega(\cCone, \cCtwo)]}.
+\end{equation*}
+In words, the unadjusted Omega Index is the proportion of pairs of objects that are in the same number of clusters in $\cCone$ as in $\cCtwo$.
+Or, formally,
+\begin{equation}
+    \omega(\cCone, \cCtwo) = \sum_{x_i, x_j \in {X \choose 2}} \chi\left\{\left|\{C_1 \in \cCone : x_i \in C_1\}\right| = \left|\{C_2 \in \cCtwo : x_j \in C_2\}\right|\right\}.
+\end{equation}
+The adjustment follows a formula copied from the ARI, and computes the expected value of the index as
+\begin{equation}
+    \E[\omega(\cCone, \cCtwo)] = \sum_{k=0}^{\min\{|\cCone|, |\cCtwo|} \frac{A^{(k)}_1 \cdot A^{(k)_2}}{|X|^2}
+\end{equation}
+where $A^{(k)}_1$ and $A^{(k)}_2$ are the number of objects in $X$ that are in $k$ clusters in $\cCone$ and $\cCtwo$ respectively.
 
-Lancichinetti et al.~\cite{onmi} proposed the overlapping Normalized Mutual Information (oNMI), an extension of the information theoretic Normalized Mutual Information~\cite{ami} using a set matching framework.
-The oNMI (and NMI) requires an adjustment term to normalize values across datasets, and McDaid et al.~\cite{onmi2} note that the original adjustment leads to some unintuitive behaviour, and suggests an alternative.
-In fact, there are 5 possible adjustment terms and, similar to the previously mentioned null-models, any choice must be carefully considered.
-In our experiments, we test both suggested adjustments, referring to that of Lancichinetti et al.~\cite{onmi} as $\mathrm{oNMI_{LFK}}$ and that of McDaid et al.~\cite{onmi2} as $\mathrm{oNMI_{MGH}}$.
+This extension seems reasonable, and is equivalent to the ARI for partitions, but is quite harsh since it does not detect any similarity if a pair of objects do not share the exact same number of clusters in both clusterings.
+Furthermore, values of $\omega$ tends to always be large, even for intuitively dissimilar clusterings, which is the same issue that prompted the adjustment of the Rand Index \cite{ari_original,ari}.
+The adjustment proposed implicitly assumes some null-model for generating random clusterings, the choice of which has been shown to have an effect for comparing partitions~\cite{partition_models}, and generally requires careful consideration of the assumptions when extending beyond partitions~\cite{fuzzy_models}.
 
+\subsection{Overlapping Normalized Mutual Information}
+The overlapping Normalized Mutual Information (oNMI) \cite{onmi} is an extension of the information theoretic Normalized Mutual Information~\cite{ami} using a set matching framework.
+To compare two clusters $C_i$ and $C_j$, define the conditional entropy
+\begin{equation}
+    H(C_i | C_j) = h(a,n) + h(b,n) + h(c,n) + h(d,n) - h(b+d,n) - h(a+c,n)
+\end{equation}
+where $h(w,n) = -w \log_2 \frac{w}{n}$ and $a = |C_i \cap C_j|, b = |C_i \cap C_j^c|, c = |C_i^c \cap C_j|$, and $d=|C_i^c, C_j^c|$.
+However, this entropy can be minimized by complementary clusters (i.e. $C_i = C_j^c$).
+Thus, we define an ``overlap only'' conditional entropy
+\begin{equation}
+    H^*(C_i | C_j) = \begin{cases}
+        H(C_i | C_j) & \text{ if } h(a,n) + h(d,n) \geq h(b,n) + h(c,n)\\
+        h(c+d,n) + h(a+b,n) & \text{ otherwise }\\
+    \end{cases}.
+\end{equation}
+The conditional entropy of a clustering is defined as
+\begin{equation}
+    H(\cCone | \cCtwo) = \sum_{C_i \in \cCone} \min_{C_j \in \cCtwo} H^*(C_i | C_j),
+\end{equation}
+and the unconditional entropy of a clustering is defined as
+\begin{equation*}
+    H(\cCone) = \sum_{C_i \in \cCone} \left(h(|C_i|, n) + h(|C_i^c|, n)\right).
+\end{equation*}
+Finally, the mutual information of two clusterings is
+\begin{equation*}
+    I(\cCone:\cCtwo) = \frac{1}{2} (H(\cCone) - H(\cCone | \cCtwo) + H(\cCtwo) - H(\cCtwo | \cCone)).
+\end{equation*}
+
+The upper bound of the mutual information depends on the particular clusterings, so for clearer interpretation the range  is restricted to $[0,1]$ via a normalization.
+The original oNMI of Lancichinetti et al.~\cite{onmi} is
+\begin{equation*}
+    \mathrm{oNMI_{LFK}}(\cCone, \cCtwo) = 1 - \frac{1}{2}\left(\frac{H(\cCone|\cCtwo)}{H(\cCone)} + \frac{H(\cCtwo|\cCone)}{H(\cCtwo)}\right),
+\end{equation*}
+but McDaid et al.~\cite{onmi2} note this normalization leads to unintuitive behaviour and suggest
+\begin{equation*}
+    \mathrm{oNMI_{MGH}}(\cCone, \cCtwo) = \frac{I(\cCone, \cCtwo)}{H(\cCone), H(\cCtwo)}.
+\end{equation*}
+In fact, there are 5 reasonable normalizations \cite{ami} and, similar to the previously mentioned null-models, any choice must be carefully considered.
+In our experiments, we test both suggested normalizations.
+
+\subsection{Element Centric Clustering Similarity}
 By shifting the focus from clusters to objects, the Element-Centric Clustering comparison (ECC)~\cite{ecc} is a new class of method.
 The method constructs a \textit{cluster-induced element graph} by placing a directed and non-uniformly weighted clique over each cluster (with weights chosen so that the degree of each object is split evenly across its clusters), and comparing the personalized pagerank vectors of each object.
-This method is intuitive and allows for interesting object-level agreement analysis, but  has several drawbacks for comparing clusterings.
+
+The cluster-induced element graph $CG(\cCone)$ has vertices $X$ and weighted edges
+\begin{equation*}
+    w(x_i, x_j) = \sum_{C_i \in \cCone} \frac{\chi\{x_i,x_j \in C_i\}}{|\{C \in \cCone : x_i \in C\}| \cdot |\{C \in \cCone : x_j \in C\}|},
+\end{equation*}
+where weight $0$ implies there is no edge.
+The personalized page rank vector $p^{(1)}_i$ of vertex $x_i$ is the solution to the diffusion
+\begin{equation*}
+    p^{(1)}_i = (1 - \alpha)e_i + \alpha p_i W^{(1)},
+\end{equation*}
+where $e_i$ is the $i^{th}$ basis vector (all zeros with a $1$ in coordinate $i$), $\alpha$ is restart parameter (fixed as $0.9$ as suggested), and $W^{(1)}$ is the weighted adjacency matrix of $CG(\cCone)$.
+Finally, the similarity is the average normalized $L_1$ distance between the pagerank vectors from each cluster induced subgraph:
+\begin{equation*}
+    ECC(\cCone, \cCtwo) = \frac{1}{|X|} \sum_{x_i \in X} \left(1 - \frac{1}{2\alpha}||p^{(1)}_i - p^{(2)}_i||_1 \right).
+\end{equation*}
+
+This method allows for interesting object-level agreement analysis, but  has several drawbacks for comparing clusterings.
 Critically, the ECS may assign maximum similarity to non-identical clusterings; for example, a single cluster that contains all objects compared to any uniform Balanced Incomplete Block Design (BIBD) over the objects will achieve maximum similarity.
 A BIBD is a clustering where each pair of objects appears in the same number of clusters and each cluster has the same size.
 These symmetries create a cluster induced element graph that is a clique with equal weights, which is identical (up to a constant scaling, which is ignored by the personalized pagerank computation) to the cluster-induced element graph of a single cluster containing all objects.
 Furthermore, the ECS is computationally difficult for large datasets with overlapping clusters, and the natural extension would treat outliers the same as clusters of size one.
 
-Finally, we briefly mention the \textit{problem of matching}~\cite{vi} that affects set-matching measures~\cite{setmatching} like the oNMI and our proposed measure.
+\subsection{The Problem of Matching}
+Finally, although not another similarity measure, let us discuss  the \textit{problem of matching}~\cite{vi} that affects set-matching measures~\cite{setmatching} like the oNMI and our proposed measure.
 The problem of matching refers to the indifference of a measure to the part of each cluster that is unmatched.
 In particular, if the unmatched portion of a cluster is concentrated in one other cluster, then it is somehow less disrupted than if the unmatched portion was spread across many clusters.
 However, while it may be less disrupted in an edit distance sense (and only if moving multiple objects between clusters costs less than moving each object individually), we disagree that intuition dictates that these disruptions should not be equally dissimilar to the original. 
 In fact, by measuring the ability of each cluster to find a match in the other clustering, a set-matching measure provides interesting cluster level information that could be useful for detecting where the clusterings disagree, possibly complementing the object level information available from the ECS~\cite{ecc}.
 
 \section{The Proposed Measure}
-For a set of objects $X = \{x_1, x_2, \ldots, x_n\}$, we define a \textit{clustering} as set of non-empty subsets of $X$.
-We call each element of a clustering a \textit{cluster}.
-Note that with this definition, each cluster in a clustering is distinct, and the empty set cannot be a cluster.
-However, we allow the clustering itself to be the empty set.
+\rc{Introduce}
 
 To define methods for comparing clusterings $\cCone$ and $\cCtwo$, we first define some methods for comparing two individual clusters.
 A cluster similarity function is a map between two subsets of $X$ and a value in $[0,1]$ that measures some notion of similarity (with $1$ denoting maximum similarity).
@@ -1329,7 +1400,7 @@ They have published alternate files for the ground truth communities that consis
 As a second experiment, we test the ability of each community detection algorithm to successfully find these high quality communities.
 We evaluate the detected communities $\cC$ with the top 5000 ground truth communities $\hat{\cC}$ using $\hat{F}^*_{w}(\hat{\cC}, \cC)$.
 Each of the high quality ground truth communities will look for a match in the detected communities, but we do not insist that each detected community is in the ground truth, nor that all the other vertices are outliers.
-The results of this experiment are shown in Figure \ref{fig:real_top_comparison}.
+The results of this experiment are shown in Figure \ref{fig:real_top d}.
 
 In this experiment, the EGOSPLIT+CAS algorithm performs the best on all three graphs and for both node and edge based comparisons.
 The scores are still quite poor (less than 0.25), which means the high scores on the Youtube graph in the previous experiment were due to correctly finding outliers.
