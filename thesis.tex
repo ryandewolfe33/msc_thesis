@@ -604,7 +604,7 @@ Moreover, this experiment verifies that the distributions coming from the real n
     \includegraphics[width=0.48\linewidth]{figures/amazon_com_size.pdf}\\
     \includegraphics[width=0.48\linewidth]{figures/youtube_com_size.pdf}
     \caption{
-        Distribution of community sizes for real-world networks and their synthetic counterparts: DBLP in panel A, Amazon in panel B, and Youtube in panel C.
+        Distribution of community sizes for real-world networks and their synthetic counterparts.
         The y-axis shows the empirical complementary cumulative distribution function, computed as $y = 1 - |\{C_i : |C_i| < x\}| \; / \; |\{C_i\}|$.
     }
     \label{fig:com-size}
@@ -623,7 +623,7 @@ The flexibility and realistic distributions are even more encouraging when we re
     \includegraphics[width=0.48\linewidth]{figures/amazon_coms_per_node.pdf}\\
     \includegraphics[width=0.48\linewidth]{figures/youtube_coms_per_node.pdf}
     \caption{
-        Distribution of the number of communities per node in each real-world network and their synthetic counterparts: DBLP in panel A, Amazon in panel B, and Youtube in panel C.
+        Distribution of the number of communities per node in each real-world network and their synthetic counterparts.
         The y-axis shows the empirical complementary cumulative distribution function, computed as $y = 1 - |\{v_i : |\{C_j : v_i \in C_j\} < x\}| \; / \; |V|$.
     }
     \label{fig:coms-per-node}
@@ -639,11 +639,9 @@ We consider this experiment strong evidence for using a reference layer as the d
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth]{figures/overlap.pdf}
+    \includegraphics[width=0.9\linewidth]{figures/overlap.pdf}
     \caption{
         Distribution of the size of overlaps in real graphs and their synthetic counterparts.
-        Each row corresponds to a real graph, panels A,B,C for DBLP, panels D,E,F for Amazon, and panels G,H,I for Youtube.
-        The left (panels A,D,G), center (panels B,E,H) and right (panels C,F,I) columns correspond to overlaps of two, three, and four communities respectively.
         The y-axis shows the empirical complementary cumulative distribution function of non-empty overlaps.
         For example, the center column of figures corresponds to three overlapping communities and is computed as $y = 1 - |\{ \{C_i, C_j, C_k\} : |C_i \cap C_j \cap C_k| < x\}| \; / \; |\{ \{C_i, C_j, C_k\} : |C_i \cap C_j \cap C_k| \neq \emptyset|$.
     }
@@ -691,7 +689,7 @@ Figures for the other graphs and dimensions can be found in Appendix~\ref{a:inte
     \includegraphics[width=0.48\linewidth]{figures/youtube_rho_vs_overlap_density_d8.pdf}
     \includegraphics[width=0.48\linewidth]{figures/dblp_rho_vs_overlap_density_d8.pdf}
     \caption{
-        Community overlap densities compared to individual community densities for various values of $\rho$ in Youtube-like graphs (panel A) and DBLP-like graphs (panel B) with $d=8$.
+        Community overlap densities compared to individual community densities for various values of $\rho$ in Youtube-like graphs (left) and DBLP-like graphs (right) with $d=8$.
         For 9 \abcdoo\ graphs with $\rho$ evenly spaced in $[-0.5, 0.5]$, we compute the empirical value $\hat{\rho}$ and the distribution of density for overlapping communities.
         We plot $\hat{\rho}$ against the distribution of the density for the intersection and each community individually.
         The line corresponds to the median, and the shaded region to the 25th to 75th quantile.
@@ -715,7 +713,7 @@ Note that the most similar dimension for each real graph is consistent with the 
     \includegraphics[width=0.48\linewidth]{figures/amazon_overlap_density.pdf}\\
     \includegraphics[width=0.48\linewidth]{figures/youtube_overlap_density.pdf}
     \caption{
-        Distribution of the density for pairs of communities with non-zero overlap in real graphs and their synthetic counterparts; DBLP in panel A, Amazon in panel B, and Youtube in panel C.
+        Distribution of the density for pairs of communities with non-zero overlap in real graphs and their synthetic counterparts.
         The shaded region corresponds to the 25th to 75th quartiles, and the whiskers correspond to the maximum and minimum values.
         We restrict to overlaps of size at least $10$ due to the discrete and unpredictable nature of small communities.
     }
@@ -748,7 +746,7 @@ This feature is also present in the DBLP graph, the other real graphs, and the o
     \includegraphics[width=0.48\linewidth]{figures/dblp_ief_d8.pdf}
     \caption{
         Five largest internal edge fractions, sorted in descending order, grouped by the number of communities.
-        Panel A corresponds to the DBLP graphs, and panel B to the synthetic counterpart with reference layer dimension $d=8$.
+        The left corresponds to the DBLP graphs, and the right to the synthetic counterpart with reference layer dimension $d=8$.
         A pattern is consistent between DBLP and \abcdoo, namely, that for nodes belonging to $\ell$ communities there are $\ell$ large, but not equal, internal edge fraction values.
     }
     \label{fig:dblp-ief}
@@ -1447,7 +1445,7 @@ However, the density of the intersection does increase with $\rho$, meaning that
     \centering
     \includegraphics[width=0.48\linewidth]{figures/youtube_rho_vs_overlap_density_d2.pdf} \hfill
     \includegraphics[width=0.48\linewidth]{figures/youtube_rho_vs_overlap_density_d64.pdf}
-    \caption{The density of overlaps compared to the empirical $\rho$ on YouTube-like \abcdoo\ graphs with reference layer dimensions $d=2$ (panel A) and $d=64$ (panel B).}
+    \caption{The density of overlaps compared to the empirical $\rho$ on YouTube-like \abcdoo\ graphs with reference layer dimensions $d=2$ and $d=64$.}
     \label{fig:a1}
 \end{figure}
 
@@ -1455,7 +1453,7 @@ However, the density of the intersection does increase with $\rho$, meaning that
     \centering
     \includegraphics[width=0.48\linewidth]{figures/dblp_rho_vs_overlap_density_d2.pdf} \hfill
     \includegraphics[width=0.48\linewidth]{figures/dblp_rho_vs_overlap_density_d64.pdf}
-    \caption{The density of overlaps compared to the empirical $\rho$ on DBLP-like \abcdoo\ graphs with reference layer dimensions $d=2$ (panel A) and $d=64$ (panel B).}
+    \caption{The density of overlaps compared to the empirical $\rho$ on DBLP-like \abcdoo\ graphs with reference layer dimensions $d=2$ and $d=64$.}
     \label{fig:a2}
 \end{figure}
 
@@ -1464,7 +1462,7 @@ However, the density of the intersection does increase with $\rho$, meaning that
     \includegraphics[width=0.48\linewidth]{figures/amazon_rho_vs_overlap_density_d2.pdf}
     \includegraphics[width=0.48\linewidth]{figures/amazon_rho_vs_overlap_density_d8.pdf}\\
     \includegraphics[width=0.48\linewidth]{figures/amazon_rho_vs_overlap_density_d64.pdf}
-    \caption{The density of overlaps compared to the empirical $\rho$ on Amazon-like \abcdoo\ graphs with reference layer dimensions $d=2$ (panel A), $d = 8$ (panel B) and $d=64$ (panel C).}
+    \caption{The density of overlaps compared to the empirical $\rho$ on Amazon-like \abcdoo\ graphs with reference layer dimensions $d=2$, $d = 8$, and $d=64$.}
     \label{fig:a3}
 \end{figure}
     
@@ -1481,7 +1479,7 @@ Furthermore, the gap between the $\ell$ and $\ell+1$ IEF values tends to decreas
     \includegraphics[width=0.48\linewidth]{figures/dblp_ief_d2.pdf}\\
     \includegraphics[width=0.48\linewidth]{figures/dblp_ief_d8_app.pdf}\hfill
     \includegraphics[width=0.48\linewidth]{figures/dblp_ief_d64.pdf}
-    \caption{The top 5 IEF values in decreasing order, grouped by the number of communities the node belongs to, for DBLP and DBLP-like \abcdoo graphs. Panel A corresponds to the real graph, and panels B, C, D correspond to the synthetic counterparts with reference layer dimension $d=2$, $d=8$, and $d=64$ respectively. Panels A and C correspond to panels A and B of Figure \ref{fig:dblp-ief}, but are repeated here for easy comparison with the other reference layer dimensions.}
+    \caption{The top 5 IEF values in decreasing order, grouped by the number of communities the node belongs to, for DBLP and DBLP-like \abcdoo graphs.}
     \label{fig:b1}
 \end{figure}
 
@@ -1491,7 +1489,7 @@ Furthermore, the gap between the $\ell$ and $\ell+1$ IEF values tends to decreas
     \includegraphics[width=0.48\linewidth]{figures/amazon_ief_d2.pdf}\\
     \includegraphics[width=0.48\linewidth]{figures/amazon_ief_d8.pdf}\hfill
     \includegraphics[width=0.48\linewidth]{figures/amazon_ief_d64.pdf}
-    \caption{The top 5 IEF values in decreasing order, grouped by the number of communities the node belongs to, for Amazon and Amazon-like \abcdoo graphs. Panel A corresponds to the real graph, and panels B, C, D correspond to the synthetic counterparts with reference layer dimension $d=2$, $d=8$, and $d=64$ respectively}
+    \caption{The top 5 IEF values in decreasing order, grouped by the number of communities the node belongs to, for Amazon and Amazon-like \abcdoo graphs.}
     \label{fig:b2}
 \end{figure}
 
@@ -1501,7 +1499,7 @@ Furthermore, the gap between the $\ell$ and $\ell+1$ IEF values tends to decreas
     \includegraphics[width=0.48\linewidth]{figures/youtube_ief_d2.pdf}\\
     \includegraphics[width=0.48\linewidth]{figures/youtube_ief_d8.pdf}\hfill
     \includegraphics[width=0.48\linewidth]{figures/youtube_ief_d64.pdf}
-    \caption{The top 5 IEF values in decreasing order, grouped by the number of communities the node belongs to, for YouTube and YouTube-like \abcdoo graphs. Panel A corresponds to the real graph, and panels B, C, D correspond to the synthetic counterparts with reference layer dimension $d=2$, $d=8$, and $d=64$ respectively}
+    \caption{The top 5 IEF values in decreasing order, grouped by the number of communities the node belongs to, for YouTube and YouTube-like \abcdoo graphs.}
     \label{fig:b3}
 \end{figure}
 
