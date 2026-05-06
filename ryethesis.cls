@@ -297,7 +297,7 @@
       {\ifx\empty\ryethesis@prevDegreeD\else{\ryethesis@prevDegreeD, \ryethesis@prevLocationD, \ryethesis@prevYearD}\\\fi}
      \vfill%\vspace{3\baselineskip}
      {A \ryethesis@documentType}\\
-      {presented to Ryerson University}\\
+      {presented to Toronto Metropolitan University}\\
       {\ifx\empty\ryethesis@partnerUniv\else{and \ryethesis@partnerUniv}\\\fi}
      \vspace{\baselineskip}
     {in partial fulfillment of the}\\
@@ -324,11 +324,11 @@
   including any required final revisions, as accepted by my
   examiners.\\
   \vspace{\baselineskip}
-  I authorize Ryerson University to lend this
+  I authorize Toronto Metropolitan University to lend this
   \ryethesis@documentType{} to other institutions or individuals for
   the purpose of scholarly research.\\
   \vspace{\baselineskip}
-  I further authorize Ryerson University to reproduce this \ryethesis@documentType{}  by photocopying or by other means, in total or in part, at the request of other institutions or individuals for the purpose of scholarly research.\\
+  I further authorize Toronto Metropolitan University to reproduce this \ryethesis@documentType{}  by photocopying or by other means, in total or in part, at the request of other institutions or individuals for the purpose of scholarly research.\\
   \vspace{0.75in}
   I understand that my thesis may be made electronically available to the public.
 \end{flushleft}
@@ -353,7 +353,7 @@
 \ryethesis@degree{}, \ryethesis@degreeYear\\
 \@author\\
 \ryethesis@program\\
-Ryerson University{\ifx\empty\ryethesis@partnerUniv\else{ and
+Toronto Metropolitan University{\ifx\empty\ryethesis@partnerUniv\else{ and
     \ryethesis@partnerUniv}\fi}\\
 \end{center}
 {\ifx\empty\ryethesis@theabstract{\begin{center}\textit{Abstract goes here!}\end{center}}\else\ryethesis@theabstract\fi}

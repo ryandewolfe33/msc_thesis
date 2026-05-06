@@ -61,16 +61,12 @@
 \newcommand{\llfd}{(\oplus \ell^1(d_n))_{\ell^\infty}}
 \newcommand{\lcd}{(\oplus \ell^1(d_n))_{c_0}}
 
-
-
 \newcommand{\abs}[1]{\lvert#1\rvert}
 \newcommand{\norm}[1]{\lVert#1\rVert}
 \newcommand{\bigabs}[1]{\bigl\lvert#1\bigr\rvert}
 \newcommand{\bignorm}[1]{\bigl\lVert#1\bigr\rVert}
 \newcommand{\Bigabs}[1]{\Bigl\lvert#1\Bigr\rvert}
 \newcommand{\Bignorm}[1]{\Bigl\lVert#1\Bigr\rVert}
-
-
 
 \newcommand{\la}{\langle}
 \newcommand{\ra}{\rangle}
@@ -208,7 +204,10 @@
 %First\_Name Last\_Name
 }
 
-\bibliographystyle{acm}
+% Template uses ACM, but I don't like it
+% \bibliographystyle{acm}
+\usepackage{hyperref}
+\bibliographystyle{plainurl}
 
 \addtoreferences{thesis}
 
@@ -219,7 +218,7 @@
 \chapter{Introduction}
 
 Clustering -- or in the context of graph data, community detection -- is one of the fundamental problems in unsupervised machine learning \cite{clusteringhandbook}.
-A clustering algorithm finds subsets of the data that intuitively ``belong together'', a notoriously ill-defined idea that is widely used for preprocessing, exploration, and prediction \rc{citations}.
+A clustering algorithm finds subsets of the data that intuitively ``belong together'', a notoriously ill-defined idea that is widely used for preprocessing, exploration, and prediction \cite{fortunatoreview,miningcomplexnetworks}.
 For graph data, the typical idea of a good community is a subset of the vertices that are densely connected to each other while sparsely connected to the rest of the graph.
 There have been a variety of attempts to exactly define a community, or score the quality of a community, and an even more algorithms to detect the various definitions of community \cite{fortunatoreview}.
 
@@ -1240,7 +1239,7 @@ We refer to \cite{fortunatoreview} or \cite{overlapreview} for a comprehensive r
 \section{Community Detection Algorithms}
 \subsection{Egosplit + CAS}
 The EgoSplitting paradigm \cite{egosplit} creates an auxiliary graph $G'$ with one or more copies of each vertex in $G$ on which we run a standard partitioning algorithm.
-Define the egonet of a vertex $v$ as the subgraph induced by the neighborhood of $v$, written $G[N(v)]$ (note that $v$ is not in its egonet).
+Define the egonet of a vertex $v$ as the subgraph induced by the neighbourhood of $v$, written $G[N(v)]$ (note that $v$ is not in its egonet).
 The EgoSplit algorithm proceeds as follows:
 \begin{enumerate}
     \item For each $v \in V(G)$, partition the egonet of $v$ with a community detection algorithm. Let $P_v = \{P_1, P_2, \dots P_{t(v)}\}$ be the resulting partition, where $t(v) = |P_v|$ and the index order is arbitrary. For $u \in N(v)$, let $\ell(u, v) = i$ such that $u \in P_i$.
@@ -1308,10 +1307,10 @@ In the following experiments, we fix $\tau = 0.5$.
 \end{algorithm}
 
 \subsection{LC + HSLC}
-This method combines the Link Communities (LC) edge clustering scores with Hierarchical Sinlge Linkage Clustering (HSLC) \cite{hslc} to allow for outliers and overlapping communities.
-LC defines a similarity measure between adjacent edges by considering the similarity of their neighborhoods, stored as the weights on the line graph.
+This method combines the Link Communities (LC) edge clustering scores with Hierarchical Single Linkage Clustering (HSLC) \cite{hslc} to allow for outliers and overlapping communities.
+LC defines a similarity measure between adjacent edges by considering the similarity of their neighbourhoods, stored as the weights on the line graph.
 The line graph $LG$ of a graph $G$ has vertices $V(LG) = E(G)$ and edges $E(LG) = \{ef: e \text{ and } f \text{ are adjacent in} G \}$.
-For adjacent edges $e = uv$ and $f = vw$, the edge similarity $s$ in LC is the jaccard similarity of the neighborhood of the non-central vertex;
+For adjacent edges $e = uv$ and $f = vw$, the edge similarity $s$ in LC is the Jaccard similarity of the neighbourhood of the non-central vertex;
 \begin{equation}
     s(e,f) = \frac{|N(u) \cap N(w)|}{|N(u) \cup N(w)|}.
 \end{equation}
