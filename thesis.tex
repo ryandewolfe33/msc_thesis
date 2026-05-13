@@ -1,5 +1,6 @@
-\PassOptionsToPackage{bookmarks={false}}{hyperref}
+\PassOptionsToPackage{bookmarks={false}, hidelinks}{hyperref}
 \documentclass[review,los,12pt]{ryethesis}
+\usepackage[nocompress]{cite}
 \usepackage{amsmath,amsfonts,amsthm,lipsum,textcomp,float,amscd,amssymb,verbatim,mathrsfs,color,bbold,amsmath,comment,graphicx,listings}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
@@ -191,17 +192,20 @@
 \prevDegreeA{Bachelor of Science}{The University of British Columbia}{2024} % for example \prevDegreeA{Bachelor of Science}{Ryerson University}{2013}
 
 \abstract{
-    Clustering (or community detection) is one of the fundamental problems in unsupervised machine learning.
-    For graph data, community detection algorithms look for subsets of vertices that are densely connected to each other and sparsely connected to the rest of the graph.
-    The most popular community detection algorithms tend to insist each vertex belong to exactly one community, although recent extensions allow for overlaps (vertices belonging to multiple communities) and outliers (vertices belonging to no communities).
-    This thesis develops tools for extrinsic benchmarking of community detection algorithms that with overlaps and outliers; first we propose an extension of the Artificial Benchmark for Community Detection to create synthetic graphs with known community structure, then we propose a clustering similarity measure that can explicitly handle overlaps and outliers.
-    We conclude with an example of using the new tools to compare several community detection methods, and open the door for measuring further improvements.
+    Clustering, or community detection, is one of the fundamental problems in unsupervised machine learning.
+    For graph data, community detection algorithms look for subsets of vertices that are densely connected internally while sparsely connected externally.
+    The most popular community detection algorithms insist each vertex belong to exactly one community, although recent extensions allow for overlaps (vertices belonging to multiple communities) and outliers (vertices belonging to no communities).
+    This thesis develops tools for extrinsic benchmarking of community detection algorithms that allow overlaps and outliers: first we propose an extension of the Artificial Benchmark for Community Detection to create synthetic graphs with known community structure, then we propose a clustering similarity measure that explicitly handles overlaps and outliers.
+    We conclude with an example of using the new tools to compare several community detection methods, and open the way for measuring further improvements.
 }
 
 
-\acknowledgements{Put acknowledgments here.
-%\\ \\
-%First\_Name Last\_Name
+\acknowledgements{
+Pawel, Francois, Bogumil.
+
+Aaron, Jordan.
+
+Teresa
 }
 
 % Template uses ACM, but I don't like it
@@ -217,12 +221,12 @@
 \begin{document}
 \chapter{Introduction}
 
-Clustering -- or in the context of graph data, community detection -- is one of the fundamental problems in unsupervised machine learning \cite{clusteringhandbook}.
-A clustering algorithm finds subsets of the data that intuitively ``belong together'', a notoriously ill-defined idea that is widely used for preprocessing, exploration, and prediction \cite{fortunatoreview,miningcomplexnetworks}.
+Clustering --- or in the context of graph data, community detection --- is one of the fundamental problems in unsupervised machine learning \cite{clusteringhandbook}.
+A clustering algorithm finds subsets of the data that intuitively ``belong together'', a notoriously ill-defined idea that is nonetheless widely used for preprocessing, exploration, and prediction \cite{fortunatoreview,miningcomplexnetworks}.
 For graph data, the typical idea of a good community is a subset of the vertices that are densely connected to each other while sparsely connected to the rest of the graph.
-There have been a variety of attempts to exactly define a community, or score the quality of a community, and an even more algorithms to detect the various definitions of community \cite{fortunatoreview}.
+There have been a variety of attempts to exactly define a community, or score the quality of a community, and many algorithms to detect the various definitions of community \cite{fortunatoreview}.
 
-The most popular and well studied ideas of community focus on partitions \cite{modularity,louvain,lfr}, a clustering where every vertex belongs to exactly one cluster.
+The most popular and well studied ideas of community focus on finding a partition \cite{modularity,louvain,lfr}, a clustering where every vertex belongs to exactly one cluster.
 However, especially in graph data, partitions are not always sufficient to describe the intuitive clusters (Figure \ref{fig:overlap_ex}).
 In particular, we extend the notion of a clustering to allow for outliers (vertices may belong to no clusters) and overlaps (vertices may belong to multiple communities).
 There are some community detection algorithms for this regime \cite{oslom,hslc}, but evaluating and comparing these algorithms can be difficult.
@@ -237,29 +241,29 @@ There are some community detection algorithms for this regime \cite{oslom,hslc},
 This thesis develops tools for the extrinsic benchmarking of community detection algorithms that allow for outliers and overlaps.
 An extrinsic benchmark evaluates the ability of a community detection algorithm to find a ground truth clustering that is believed to be correct.
 The first component to an extrinsic benchmark is the data.
-In real networks, the ground truth clustering is often determined from meta-data that is not given to the detection algorithm but is suspected to produce communities \cite{snap}.
-However, creating these ground truth clustering is difficult, and it is not always clear that the ground truth communities actually exist in the data \cite{yang2012defining}.
+In real networks, the ground truth clustering is often determined from meta-data that is not given to the detection algorithm, but is suspected to produce communities \cite{snap}.
+However, finding the right data for the ground truth clustering is difficult, and it is not always clear that the ground truth communities actually exist in the data \cite{yang2012defining}.
 Thus, we use synthetic data that is generated with a known community structure \cite{lfr,lfro,abcd,abcdo}.
 In Chapter \ref{chap:abcdoo}, we propose \abcdoo, an extension of the Artificial Benchmark for Community Detection with Outliers (\abcdo) model \cite{abcdo,abcd} to allow for overlapping communities. 
 The second component is a method to compare the similarity of the detected clustering to the ground truth clustering.
-Many methods exist for partitions \cite{ari,nmi,ami}, and some have extended for overlaps \cite{omega,onmi,ecc}, but to the best of our knowledge none have explicitly considered outliers.
+Many methods exist for partitions \cite{ari,vi,nmi,ami}, and some have been extended for overlaps \cite{omega,onmi,ecc}, but, to the best of our knowledge, none have explicitly considered outliers.
 Chapter \ref{chap:fstar} develops a new method based on a set-matching framework \cite{setmatching} and includes an explicit outlier comparison term.
 Finally, Chapter \ref{chap:benchmark} briefly reviews three community detection algorithms and uses the newly developed tools to evaluate their performance.
 
 The bulk of this thesis is based on the following papers:
 \begin{itemize}
-    \item ``The Artificial Benchmark for Community Detection with Outliers and Overlapping Communities ({ABCD}+o$^2$)'' \cite{abcdoo_paper} has been accepted for publication in the Journal of Complex Networks. A preliminary version \cite{abcdoo_conference} was published in the Proceedings of the 20th Workshop on Modelling and Mining Networks (WAW2025). The authors contributed equally to the results.
+    \item ``The Artificial Benchmark for Community Detection with Outliers and Overlapping Communities ({ABCD}+o$^2$)'' \cite{abcdoo_paper} has been accepted for publication in the Journal of Complex Networks. A preliminary version \cite{abcdoo_conference} is published in the Proceedings of the 20th Workshop on Modelling and Mining Networks (WAW2025). The authors contributed equally to the results.
     \item ``A Pragmatic Method for Comparing Clusterings with Overlaps and Outliers'' \rc{is under review somewhere.} Ryan DeWolfe was the lead author, responsible for the idea, implementation, experiments, and initial draft.
 \end{itemize}
-It also uses community detection algorithms developed during the program and presented in the following papers:
+It also uses community detection algorithms developed during the program and proposed in the following papers:
 \begin{itemize}
-    \item ``Improving Community Detection via Community Association Strength Scores'' \cite{cas} published in the Proceedings of the 20th Workshop on Modelling and Mining Networks (WAW2025). The authors contributed equally to the results.
-    \item ``Hierarchical Single-Linkage Clustering for Community Detection with Overlaps and Outliers'' \cite{hslc} published in the Proceedings of the 14th International Conference on Complex Networks and their Applications (COMPLEX NETWORKS 2025). Ryan DeWolfe is the sole author.
+    \item ``Improving Community Detection via Community Association Strength Scores'' \cite{cas} is published in the Proceedings of the 20th Workshop on Modelling and Mining Networks (WAW2025). The authors contributed equally to the results.
+    \item ``Hierarchical Single-Linkage Clustering for Community Detection with Overlaps and Outliers'' \cite{hslc} is published in the Proceedings of the 14th International Conference on Complex Networks and their Applications (COMPLEX NETWORKS 2025). Ryan DeWolfe is the sole author.
 \end{itemize}
 Finally, written during the program but not mentioned in the thesis are the following papers:
 \begin{itemize}
-    \item ``Detecting Patterns of Interaction in Temporal Hypergraphs via Edge Clustering'' \cite{temporalhyperedgeclustering} published in the Proceedings of the 17th International Conference on Advances in Social Networks Analysis and Mining (ASONAM2025).
-    \item ``Leveraging Non-linear Dimension Reduction and Random Walk Co-occurrence for Node Embedding'' \cite{cove} posted to arXiv.
+    \item ``Detecting Patterns of Interaction in Temporal Hypergraphs via Edge Clustering'' \cite{temporalhyperedgeclustering} is published in the Proceedings of the 17th International Conference on Advances in Social Networks Analysis and Mining (ASONAM2025).
+    \item ``Leveraging Non-linear Dimension Reduction and Random Walk Co-occurrence for Node Embedding'' \cite{cove} is posted to arXiv.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -268,23 +272,21 @@ Finally, written during the program but not mentioned in the thesis are the foll
 To support the development and analysis of overlapping community detection algorithms, a large and diverse catalogue of networks with ground-truth communities is required for testing, tuning and training.
 Unfortunately, there are few such datasets with communities identified and labelled.
 As a result, there is a need for synthetic random graph models with known community structure that resemble real-world networks.
-The popular \lfr\ (Lancichinetti, Fortunato, and Radicchi) model~\cite{lfr,lfro} generates networks with communities and, at the same time, allows for heterogeneity in the distributions of both node degrees and of community sizes.
-Due to this structural freedom, the \lfr\ model became a standard and extensively used model for generating artificial networks with ground-truth communities. 
+The popular \lfr\ (Lancichinetti, Fortunato, and Radicchi) model~\cite{lfr,lfro} generates networks with communities and allows for heterogeneity in the distributions of both node degrees and of community sizes.
+The \lfr\ model became a standard and extensively used model for generating artificial networks with ground-truth communities. 
 A model similar to \lfr, the Artificial Benchmark for Community Detection (\abcd)~\cite{abcd}, was recently introduced in 2021.
 
 Undirected variants of \lfr\ and \abcd\ produce graphs with comparable properties, but \abcd\ is faster than \lfr\ and can be easily tuned to allow the user to make a smooth transition between the two extremes: pure (disjoint) communities and a random graph with no community structure.
 Moreover, \abcd\ is easier to analyze theoretically \cite{abcdmodularity,abcdselfsimilarity}.
-Finally, the building blocks in the model are flexible and may be adjusted to satisfy different needs.
 The \abcd\ model has been generalized to include outliers (\abcdo)~\cite{abcdo} and separately generalized to generate hypergraphs~\cite{habcd}.
 Accordingly, the \abcd\ model is gaining recognition as a benchmark for community detection algorithms.
 For example, in~\cite{bayan}, the authors use both \abcd\ and \lfr\ graphs to compare 30 community detection algorithms and highlight that \emph{``being directly comparable to \lfr, \abcd\ offers additional benefits, including higher scalability and better control for adjusting an analogous mixing parameter.''}
 
-This chapter introduces the \abcdoo\ model: a further generalization of the \abcdo\ model that allows for overlapping communities.
-The \lfr\ model has been similarly extended \cite{lfro}, but in their model the nodes are assigned to communities based on the construction of a random bipartite graph between nodes and communities resulting in a small amount of overlap between almost every pair of communities and rarely any pair of communities with a large overlap.
+This chapter introduces the \abcdoo\ model: a further generalization of the \abcdo\ model that allows for outliers and overlapping communities.
+The \lfr\ model has been similarly extended \cite{lfro}, but in their model the nodes are assigned to communities based on the construction of a random bipartite graph between nodes and communities resulting in a small amount of overlap between almost every pair of communities and rarely any pair of communities with a large overlap (for more details, see Section \ref{sec:effects_of_reference_layer}).
 In \abcdoo, we instead generate overlapping communities based on a hidden, low-dimensional geometric layer which tends to yield fewer and larger overlaps.
-This geometric approach to community structure is justified by the fact that latent geometric spaces are believed to shape complex networks (e.g., social media networks shaped by users' opinions, education, knowledge, interests, etc.).
+This geometric approach to community structure is heuristically justified since latent geometric spaces are believed to shape complex networks~\cite{boguna2021network,serrano2021shortest} (e.g., social media networks shaped by users' opinions, education, knowledge, interests, etc.).
 These latent spaces have been successfully employed for many years to model and explain network properties such as self-similarity~\cite{serrano2008self}, homophily and aversion~\cite{henry2011emergence}.
-For more details, we direct the reader to the survey~\cite{boguna2021network} or the book~\cite{serrano2021shortest}.
 The ancillary benefits of the \abcd\ model (an intuitive noise parameter, a fast implementation, and theoretical analysis) are still present.
 
 \section{The Model}
@@ -293,9 +295,9 @@ The \abcdoo\ model generates a random graph on $n$ nodes with a degree sequence 
 The model samples a graph in four phases, which are visualized in Figure~\ref{fig:big_picture}.
 In the first phase, we assign non-outlier nodes to communities, making use of a $d$-dimension hidden reference layer whose geometry is used to guide the community overlap.
 Next, we sample and assign degree to nodes.
-In phase $3$, the degree of each node is split so that (on average) the proportion in the background graph is $\xi$ and the remaining degree is split evenly among the communities to which the node belongs. 
+The degree of each node is split so that (on average) the proportion in the background graph is $\xi$ and the remaining degree is split evenly among the communities to which the node belongs. 
 We sample the background graph and each community graph using the configuration model.
-Finally, we perform any necessary rewiring to remove loops and multi-edges so that the final graph is simple.
+Finally, we perform any necessary rewiring to remove loops and multi-edges so the final graph is simple.
 \begin{figure}
     \center
     \includegraphics[width=0.9\linewidth]{figures/fig1.pdf}
@@ -311,7 +313,7 @@ Finally, we perform any necessary rewiring to remove loops and multi-edges so th
 \end{figure}
 
 \subsection{Notation}
-For $n \in \N := \{1, 2, \ldots \}$, let $[n]$ denote the set consisting of the first $n$ natural numbers, that is, $[n] := \{1, 2, \ldots, n\}$. 
+For $n \in \N$, let $[n]$ denote the set consisting of the first $n$ natural numbers, that is, $[n] := \{1, 2, \ldots, n\}$. 
 For a random variable $X$, write $\bP(X = k)$ for the probability that $X = k$ and $\E[X]$ for the expected value of $X$.
 For a distribution $\cD$, write $X \sim \cD$ to mean $X$ is sampled from the distribution $\cD$. 
 Any real number $x \in \R$ can be written as $x = a+b$ with $a \in \Z$ and $b \in [0,1)$.
@@ -325,7 +327,7 @@ a+1 & \text{ with probability } b \,.
 \]
 Note that $\E \left[ \round{x} \right] = a (1-b) + (a+1) b = x$. 
 
-For given parameters $\gamma \in (0, \infty)$, $\delta, \Delta \in \N$ with $\delta \leq \Delta$, define a truncated power-law distribution $\tpl{\gamma}{\delta}{\Delta}$ as follows.
+For given parameters $\gamma \in (0, \infty)$, and $\delta, \Delta \in \N$ with $\delta \leq \Delta$, define a truncated power-law distribution $\tpl{\gamma}{\delta}{\Delta}$ as follows.
 For $X \sim \tpl{\gamma}{\delta}{\Delta}$ and for $k \in \N$ with $\delta \leq k \leq \Delta$,
 \begin{equation}\label{eq:tpl}
 \bP(X = k) = \frac{\int_k^{k+1} x^{-\gamma} \, dx}{\int_{\delta}^{\Delta+1} x^{-\gamma} \, dx} \,.
@@ -335,8 +337,8 @@ For $X \sim \tpl{\gamma}{\delta}{\Delta}$ and for $k \in \N$ with $\delta \leq k
 The configuration model is an important ingredient of all variants of the \abcd\ models.
 Suppose that our goal is to create a graph on $n$ nodes with a given degree sequence $\textbf{d}$, where $\textbf{d} = (d_i, i \in [n])$ is a sequence of non-negative integers such that $\sum_{i \in [n]} d_i$ is even.
 The configuration model $\mathrm{CM}(\textbf{d})$, first introduced by Bollob\'as~\cite{bollobas1980probabilistic}, samples a multi-graph with the given degree sequence $\textbf{d}$.
-The model first labels $n$ nodes as $(v_i, i \in [n])$ and endowing each $v_i$ with $d_i$ half-edges.
-It then iteratively choose two unpaired half-edges uniformly at random from the set of pairs of remaining half-edges, and pair them together to form an edge.
+The model first labels $n$ nodes as $(v_i, i \in [n])$ and endows each $v_i$ with $d_i$ half-edges.
+It then iteratively choose two unpaired half-edges uniformly at random from the set of pairs of remaining half-edges, and pairs them together to form an edge.
 This process yields a multi-graph $G_n \sim \mathrm{CM}(\textbf{d})$ on $n$ nodes, where $G_n$ is allowed self-loops and multi-edges.
 See~\cite{bender1978asymptotic,wormald1984generating,wormald1999models} for related models and results.
 
@@ -403,7 +405,7 @@ We now create the $d$-dimensional reference layer.
 One may think of this reference layer as a latent space representing node properties (such as people's age, education, geographic location, beliefs, etc.) and shaping communities (such as communities in social media) based on proximity.
 Each node $(v_i, i \in [\hat{n}])$ is given a vector $\mathbf{v}_i$ in $\R^d$ sampled independently and uniformly at random from the ball of radius $1$ centered at the origin.
 Let $R_1 = \{\mathbf{v}_i: i \in [\hat{n}]\}$.
-We sequentially build communities $\hat{C}_{1}, \hat{C}_{2},\ldots, \hat{C}_L$ where, by convention, $\hat{C}_{0} = \emptyset$.
+We sequentially build communities $\hat{C}_{1}, \hat{C}_{2},\ldots, \hat{C}_L$.
 To create $\hat{C}_{j}$, we first select the vector in $R_{j}$ that is furthest from the origin, and call it the seed $c_j$.
 The community $\hat{C}_j$ is set as the node associated with the seed, along with the nodes of the seed's $\hat{s}_j - 1$ nearest neighbours in $R_j$.
 Finally, we set $R_{j+1} = R_j - \{\mathbf{v}_i: v_i \in \hat{C}_j\}$.
@@ -421,10 +423,10 @@ In Figure \ref{fig:communities} we show an example of the reference layer with $
 From a computational perspective, to ensure that finding primary and secondary communities is efficient, we use k-d trees to perform spatial lookups~\cite{bentley1975kdtrees}.
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.37\linewidth]{figures/fig2a.pdf}
-    \includegraphics[width=0.37\linewidth]{figures/fig2b.pdf}\\
-    \includegraphics[width=0.37\linewidth]{figures/fig2c.pdf}
-    \caption{Example of building the community $C_3$ with $\hat{s}_3 = 40$ and $\eta = 1.75$ using a 2-dimensional reference layer. First, in panel A, we select the seed $c_3$ as the vector furthest from the origin that does not have a primary community. Next (panel B), we build the primary community $\hat{C}_3$ as node of the seed and the nodes of the seed's $\hat{s}_3 - 1$ nearest neighbours that do not yet have a primary community. Finally, in panel C, we expand create $C_3$ by expanding $\hat{C}_3$ by a factor of $\eta$ (from $40$ to $40 \cdot 1.75 = 70$ nodes) by taking the nearest neighbours to the primary center of mass.}
+    \includegraphics[width=0.38\linewidth]{figures/fig2a.pdf}
+    \includegraphics[width=0.38\linewidth]{figures/fig2b.pdf}\\
+    \includegraphics[width=0.38\linewidth]{figures/fig2c.pdf}
+    \caption{Example of building the community $C_3$ with $\hat{s}_3 = 40$ and $\eta = 1.75$ using a 2-dimensional reference layer. First, in panel A, we select the seed $c_3$ as the vector furthest from the origin that does not have a primary community. Next (panel B), we build the primary community $\hat{C}_3$ as node of the seed and the nodes of the seed's $\hat{s}_3 - 1$ nearest neighbours that do not yet have a primary community. Finally, in panel C, we expand create $C_3$ by expanding $\hat{C}_3$ by a factor of $\eta$ (from $40$ to $40 \times 1.75 = 70$ nodes) by taking the nearest neighbours to the primary center of mass.}
     \label{fig:communities}
 \end{figure}
 
@@ -576,25 +578,25 @@ Additionally, most of the experiments are affected by the dimension $d$ of the h
 \subsection{Effects of the Reference Layer} \label{sec:effects_of_reference_layer}
 The new and novel feature of the \abcdoo\ model is the hidden reference layer used to generate overlapping communities.
 Here, we analyze the effects of this reference layer on the community overlap sizes.
-For comparison, we consider the CKB model~\cite{chykhradze2014ckb} following a description from~\cite{sengupta2017ckbdescription}.
-The CKB model is an application of the random bipartite community affiliation graph proposed for overlapping \lfr~\cite{lfro} that uses a power-law distribution for the number of communities per node.
+For comparison, we consider the CBK model~\cite{chykhradze2014CBK} following a description from~\cite{sengupta2017CBKdescription}.
+The CBK model is an application of the random bipartite community affiliation graph proposed for overlapping \lfr~\cite{lfro} that uses a power-law distribution for the number of communities per node.
 Let us briefly summarize this graph construction process.
 The community affiliation graph is a bipartite graph where one part consists of nodes and the other consists of communities.
-As input, the CKB model requires the number of nodes $n$, a truncated power-law distribution $\tpl{\Omega}{x_{\min}}{x_{\max}}$ for the number of communities per node, and another truncated power-law distribution $\tpl{\beta}{s}{S}$ for the community sizes.
+As input, the CBK model requires the number of nodes $n$, a truncated power-law distribution $\tpl{\Omega}{x_{\min}}{x_{\max}}$ for the number of communities per node, and another truncated power-law distribution $\tpl{\beta}{s}{S}$ for the community sizes.
 The number of communities is set to 
 \[
 \left\lfloor \frac{n \cdot \E[\tpl{\Omega}{x_{\min}}{x_{\max}}]}{\E[\tpl{\beta}{s}{S}]} \right\rfloor \,.
 \]
 First, each node in the bipartite graph is assigned a number of half-edges sampled from $\tpl{\Omega}{x_{\min}}{x_{\max}}$, and likewise each community is assigned a number of half-edges sampled from $\tpl{\beta}{s}{S}$.
 A small adjustment is made to ensure that the number of half-edges in both parts is equal.
-Lastly, the nodes are matched with the communities based on the bipartite configuration model.
+The nodes are matched with the communities based on the bipartite configuration model.
 Thus, each community is populated with nodes, and each node is assigned to some number of communities. 
 
 \subsubsection*{Community sizes.}
 
 In the first experiment (see Figure~\ref{fig:com-size}), we compare the distributions of community sizes.
-Of course, since both \abcdoo\ and CKN sample community sizes directly from the specified distribution, it is unsurprising that the empirical distributions are near-perfect fits when accounting for the imposed minimum community size of $10$.
-Thus, this first experiment merely acts as a sanity check ensuring that the \abcdoo\ and CKN models generate community sizes correctly.
+Of course, since both \abcdoo\ and CBK sample community sizes directly from the specified distribution, it is unsurprising that the empirical distributions are near-perfect fits when accounting for the imposed minimum community size of $10$.
+Thus, this first experiment merely acts as a sanity check ensuring that the \abcdoo\ and CBK models generate community sizes correctly.
 Moreover, this experiment verifies that the distributions coming from the real networks are indeed power-law.
 
 \begin{figure}[H]
@@ -612,7 +614,7 @@ Moreover, this experiment verifies that the distributions coming from the real n
 \subsubsection*{Number of communities per node.}
 Results are presented in Figure~\ref{fig:coms-per-node}.
 In contrast with the previous experiment, there is less agreement between the two models and the real distributions.
-In the case of the YouTube and DBLP networks, the power-law distribution generated by the CKN model is a good fit for the empirical distribution, whereas the Amazon distribution does not appear to be power-law.
+In the case of the YouTube and DBLP networks, the power-law distribution generated by the CBK model is a good fit for the empirical distribution, whereas the Amazon distribution does not appear to be power-law.
 In contrast, the \abcdoo\ model is able to produce a distribution similar to each of the three networks with a properly tuned dimension parameter $d$; for the Amazon graph a low dimensional reference layer captures the behaviour well, and for the DBLP and YouTube graphs a high dimensional reference layer captures the behaviour well.
 The flexibility and realistic distributions are even more encouraging when we recall that the distribution is not given to the \abcdoo model, and is instead a natural feature of the hidden reference layer. 
 
@@ -631,14 +633,14 @@ The flexibility and realistic distributions are even more encouraging when we re
 \subsubsection*{Community intersection sizes.}
 Results are presented in Figure~\ref{fig:com-overlap}.
 We examine the size of the overlaps produced by each model.
-Neither the \abcdoo\ model nor the CKN model specifies a particular distribution, but we can see the \abcdoo\ model, with a well-tuned dimension parameter, is able to create a similar distribution to the real graph.
-In contrast, the CKN model does not fit the Amazon and YouTube graphs well.
-Specifically, the CKN model produces too many small intersections and, moreover, the largest intersection is several orders of magnitude too small.
+Neither the \abcdoo\ model nor the CBK model specifies a particular distribution, but we can see the \abcdoo\ model, with a well-tuned dimension parameter, is able to create a similar distribution to the real graph.
+In contrast, the CBK model does not fit the Amazon and YouTube graphs well.
+Specifically, the CBK model produces too many small intersections and, moreover, the largest intersection is several orders of magnitude too small.
 We consider this experiment strong evidence for using a reference layer as the default option for generating overlapping communities.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{figures/overlap.pdf}
+    \includegraphics[width=\linewidth]{figures/overlap.pdf}
     \caption{
         Distribution of the size of overlaps in real graphs and their synthetic counterparts.
         The y-axis shows the empirical complementary cumulative distribution function of non-empty overlaps.
@@ -698,7 +700,7 @@ Figures for the other graphs and dimensions can be found in Appendix~\ref{a:inte
 \end{figure}
 
 Having community intersections that are denser than the respective communities is a desirable property and one of our main motivators for introducing the parameter $\rho$ to the \abcdoo\ model.
-In~\cite{yang2014overlapping} it was found that, in real networks, community intersections can be significantly denser than the individual communities.
+It was found that, in real networks, community intersections can be significantly denser than the individual communities~\cite{yang2014overlapping}.
 In Figure~\ref{fig:dblp-overlaps} we confirm that the DBLP, Amazon, and YouTube networks all exhibit this phenomenon.
 Moreover, we compare these densities with those of the corresponding \abcdoo\ graphs.
 Aside from confirming that the model can produce behaviour similar to the real networks, we also find that the dimension of the reference layer affects the density of both the communities and the intersections.
@@ -765,7 +767,7 @@ However, we allow the clustering itself to be the empty set.
 
 \section{Existing Options}\label{sec:related}
 Comparing partitions is a well-studied problem, and there are a wide variety of measures that are used~\cite{comparisonreview}, which can be broadly classified as either pair-counting, information theoretic, or set-matching~\cite{setmatching}.
-In this section, we review some extensions to overlapping clusterings and discuss the so-called \textit{problem of matching}.
+In this section, we review extensions for comparing overlapping clusterings $\cCone$ and $\cCtwo$, and discuss the so-called \textit{problem of matching}.
 
 \subsection{Omega Index}
 The \textit{Omega} index~\cite{omega} extends the pair-counting Adjusted Rand Index (ARI)~\cite{ari} by extending the contingency table from agree versus disagree to counting the number of clusters in common.
@@ -793,7 +795,7 @@ To compare two clusters $C_i$ and $C_j$, define the conditional entropy
 \begin{equation}
     H(C_i | C_j) = h(a,n) + h(b,n) + h(c,n) + h(d,n) - h(b+d,n) - h(a+c,n)
 \end{equation}
-where $h(w,n) = -w \log_2 \frac{w}{n}$ and $a = |C_i \cap C_j|, b = |C_i \cap C_j^c|, c = |C_i^c \cap C_j|$, and $d=|C_i^c, C_j^c|$.
+where $h(w,n) = -w \log_2 \frac{w}{n}$ and $a = |C_i \cap C_j|, b = |C_i \cap C_j^c|, c = |C_i^c \cap C_j|$, and $d=|C_i^c \cap C_j^c|$.
 However, this entropy can be minimized by complementary clusters (i.e. $C_i = C_j^c$).
 Thus, define an ``overlap only'' conditional entropy
 \begin{equation}
@@ -812,7 +814,7 @@ and the unconditional entropy of a clustering is defined as
 \end{equation*}
 Finally, the mutual information of two clusterings is
 \begin{equation*}
-    I(\cCone:\cCtwo) = \frac{1}{2} (H(\cCone) - H(\cCone | \cCtwo) + H(\cCtwo) - H(\cCtwo | \cCone)).
+    I(\cCone:\cCtwo) = \frac{H(\cCone) - H(\cCone | \cCtwo) + H(\cCtwo) - H(\cCtwo | \cCone)}{2}.
 \end{equation*}
 
 The upper bound of the mutual information depends on the particular clusterings, so for clearer interpretation the range  is restricted to $[0,1]$ via a normalization.
@@ -822,10 +824,9 @@ The original oNMI of Lancichinetti et al.~\cite{onmi} is
 \end{equation}
 but McDaid et al.~\cite{onmi2} note this normalization leads to unintuitive behaviour and suggest
 \begin{equation}
-    \mathrm{oNMI_{MGH}}(\cCone, \cCtwo) = \frac{I(\cCone, \cCtwo)}{H(\cCone), H(\cCtwo)}.
+    \mathrm{oNMI_{MGH}}(\cCone, \cCtwo) = \frac{I(\cCone, \cCtwo)}{\max \left\{H(\cCone), H(\cCtwo)\right\}}.
 \end{equation}
 In fact, there are 5 reasonable normalizations \cite{ami} and, similar to the previously mentioned null-models, any choice must be carefully considered.
-In our experiments, we test both suggested normalizations.
 
 \subsection{Element Centric Clustering Similarity}
 By shifting the focus from clusters to objects, the Element-Centric Clustering comparison (ECC)~\cite{ecc} is a new class of method.
@@ -836,15 +837,15 @@ The cluster-induced element graph $CG(\cCone)$ has vertices $X$ and weighted edg
     w(x_i, x_j) = \sum_{C_i \in \cCone} \frac{\chi\{x_i,x_j \in C_i\}}{|\{C \in \cCone : x_i \in C\}| \cdot |\{C \in \cCone : x_j \in C\}|},
 \end{equation}
 where weight $0$ implies there is no edge.
-The personalized page rank vector \cite{pagerank} $p^{(1)}_i$ of vertex $x_i$ is the solution to the diffusion
+The personalized page rank vector \cite{pagerank} of vertex $x_i$ is the solution to the diffusion
 \begin{equation}
-    p^{(1)}_i = (1 - \alpha)e_i + \alpha p_i W^{(1)},
+    p^{(1)}_i = (1 - \alpha)e_i + \alpha p^{(1)}_i W^{(1)},
 \end{equation}
 where $e_i$ is the $i^{th}$ basis vector (all zeros with a $1$ in coordinate $i$), $\alpha$ is restart parameter (fixed as $0.9$ as suggested), and $W^{(1)}$ is the weighted adjacency matrix of $CG(\cCone)$.
 The vector $p^{(2)}_i$ is defined similarly for $\cCtwo$.
 Finally, the similarity is the average normalized $L_1$ distance between the pagerank vectors from each cluster induced subgraph:
 \begin{equation}
-    ECC(\cCone, \cCtwo) = \frac{1}{|X|} \sum_{x_i \in X} \left(1 - \frac{1}{2\alpha}||p^{(1)}_i - p^{(2)}_i||_1 \right).
+    \mathrm{ECC}(\cCone, \cCtwo) = \frac{1}{|X|} \sum_{x_i \in X} \left(1 - \frac{1}{2\alpha}||p^{(1)}_i - p^{(2)}_i||_1 \right).
 \end{equation}
 
 This method allows for interesting object-level agreement analysis, but  has several drawbacks for comparing clusterings.
@@ -878,8 +879,6 @@ The $F^*$ score is equivalent to the well-known Jaccard index for set similarity
 \begin{equation}
 F^*(C_i, C_j) = \frac{F_1(C_i, C_j)}{2 - F_1(C_i, C_j)} = \frac{|C_i \cap C_j|}{|C_i \cup C_j|}.
 \end{equation}
-For the rest of the paper, we will use $F^*$.
-It could be replaced by any of the above (or other) set similarity measures, but it is easy to work with and will serve as a general comparison measure.
 
 Next, we define methods for measuring how well each cluster in $\cCone$ can find a matching cluster in $\cCtwo$.
 For a cluster $C_i \in \cCone$, we find a matching cluster by taking the maximum similarity when comparing to each cluster in $\cCtwo$:
@@ -1160,7 +1159,7 @@ As seen in Figure \ref{fig:experiment}, the behaviour of $F^*_{wo}$ matches our 
 
 \begin{figure*}[!t]
     \centering
-    \includegraphics[width=0.9\linewidth]{figures/intuition1.pdf}
+    \includegraphics[width=\linewidth]{figures/intuition1.pdf}
     \caption{
         Recreation of the experiment in Figure 2 of \cite{ecc} with $F^*_{wo}$.
         Each column represents one scenario, including a visual of the scenario, the intuitive behaviour of a similarity measure in this scenario, and the actual behaviour of several measures in each row respectively.
@@ -1233,8 +1232,7 @@ For evaluating graph clustering algorithms, we recommend analyzing performance f
 \chapter{Benchmarking Community Detection Algorithms} \label{chap:benchmark}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 In this chapter, we use the tools developed in Chapters \ref{chap:abcdoo} and \ref{chap:fstar} in an extrinsic community detection benchmark.
-First, we briefly describe three algorithms for community detection with overlaps and outliers.
-We refer to \cite{fortunatoreview} or \cite{overlapreview} for a comprehensive review of community detection.
+First, we briefly describe three algorithms for community detection with overlaps and outliers, and refer to \cite{fortunatoreview} or \cite{overlapreview} for a comprehensive review of community detection.
 
 \section{Community Detection Algorithms}
 \subsection{Egosplit + CAS}
@@ -1248,7 +1246,7 @@ The EgoSplit algorithm proceeds as follows:
     \item Run a community detection algorithm on $G'$ to get communities $\cC'$.
     \item Create the final communities
     \begin{equation}
-        \cC = \{ \{v \in V(G): \{v_1, v_2, \dots v_{t(v)}\} \cap C' \neq \emptyset  \}: C' \in \cC'\}.
+        \cC = \left\{ \{v \in V(G): \{v_1, v_2, \dots v_{t(v)}\} \cap C' \neq \emptyset  \}: C' \in \cC' \right\}.
     \end{equation}
 \end{enumerate}
 For community detection on the egonets, we use Label Propagation \cite{nandini2007}, and for community detection on $G'$ we use ECG~\cite{ecg}.
@@ -1258,12 +1256,12 @@ While the egosplitting framework allows for overlapping communities (and possibl
 In a recent paper \cite{cas}, we propose post-processing a clustering using a Community Association Score (CAS).
 The best performing score is the Normalized Internal Edge Fraction (NIEF), defined as
 \begin{equation}
-    \mathrm{NIEF}(v, C) := \max\left\{ \mathrm{IEF}(v, C) - \frac{vol(C)}{vol(V)} , 0 \right\},
+    \mathrm{NIEF}(v, C) := \max\left\{ \mathrm{IEF}(v, C) - \frac{vol(C)}{vol(V)} , 0 \right\}
 \end{equation}
 and motivated as the internal edge fraction corrected for community size.
 A simple post-processing algorithm is to accept a user-defined threshold $\tau$, and add a vertex $v$ to a community $C$ if $\mathrm{NIEF}(v, C) > \tau$ or remove $v$ from $C$ if $\mathrm{NIEF}(v, C) < \tau$.
 We repeatedly perform the post-processing until the communities stablise (or we get stuck in a 2-step loop of adding then removing a few vertices, in which case we terminate).
-Pseudocode of the post-processing algorithm in shown in Algorithm \ref{alg:postprocess}.
+Pseudocode of the post-processing algorithm is shown in Algorithm \ref{alg:postprocess}.
 In the following experiments, we fix $\tau = 0.5$.
 \begin{algorithm}
     \caption{CAS Post-processing Algorithm}
@@ -1307,9 +1305,9 @@ In the following experiments, we fix $\tau = 0.5$.
 \end{algorithm}
 
 \subsection{LC + HSLC}
-This method combines the Link Communities (LC) edge clustering scores with Hierarchical Single Linkage Clustering (HSLC) \cite{hslc} to allow for outliers and overlapping communities.
-LC defines a similarity measure between adjacent edges by considering the similarity of their neighbourhoods, stored as the weights on the line graph.
-The line graph $LG$ of a graph $G$ has vertices $V(LG) = E(G)$ and edges $E(LG) = \{ef: e \text{ and } f \text{ are adjacent in} G \}$.
+This method combines the Link Communities (LC) \cite{linkcoms} edge clustering scores with Hierarchical Single Linkage Clustering (HSLC) \cite{hslc} to allow for outliers and overlapping communities.
+LC defines a similarity measure between adjacent edges by considering the similarity of their neighbourhoods and stored as a weighted line graph.
+The line graph $LG$ of a graph $G$ has vertices $V(LG) = E(G)$ and edges $E(LG) = \{ef: e \text{ and } f \text{ are adjacent in } G \}$.
 For adjacent edges $e = uv$ and $f = vw$, the edge similarity $s$ in LC is the Jaccard similarity of the neighbourhood of the non-central vertex;
 \begin{equation}
     s(e,f) = \frac{|N(u) \cap N(w)|}{|N(u) \cup N(w)|}.
@@ -1321,7 +1319,7 @@ The algorithm is taken from HDBSCAN \cite{hdbscan,hdbscancode}, a popular densit
 First, a single-linkage dendrogram is built from the similarity graph $LG$.
 The clusters at cut level $\lambda$ are the connected components of the subgraph with all vertices and edges $\{ef \in E(LG) : s(e, f) \geq \lambda\}$.
 
-This dendrogram is generally too complex to visualize (consider that when $\lambda \to \infty$ every object has its own cluster), so to condense the dendrogram so that it only tracks significant clusters, a parameter $m_s$ is introduced to control the minimum cluster size.
+This dendrogram is generally too complex to visualize (consider that when $\lambda \to \infty$ every object has its own cluster), so the dendrogram is condensed with a parameter $m_s$ that controls the minimum cluster size.
 When traversing the dendrogram top-down, if a cluster is split, then one of the following three cases will occur:
 \begin{enumerate}
     \item The cluster splits into several clusters, each with less than $m_s$ vertices. We say the cluster has disappeared.
@@ -1356,7 +1354,7 @@ We vary $\xi \in [0.2, 0.6]$ and $\eta \in [1,3]$, and fix $n=10000, s_0=1000, \
 For each set of parameters, we generate $10$ sample graphs and report the mean $F^*_{wo}$ of the detected clustering compared to the ground truth.
 
 Figure \ref{fig:heatmap_grid} shows the performance of each algorithm as a heatmap.
-As expected, each algorithm performs quite well when both $\xi$ and $\eta$ are small (especially when $\eta=1$ and there is no overlap), but performance tends to decrease as either parameter increases.
+As expected, each algorithm performs quite well when both $\xi$ and $\eta$ are small (especially when there is no overlap), but performance tends to decrease as either parameter increases.
 The exception is when comparing the induced edge clusterings for EGOSPLIT+CAS and OSLOM, in which case the performance tends to increase as $\xi$ increases, indicating these algorithms find small clusters or lots of outliers.
 \begin{figure}
     \centering
@@ -1368,11 +1366,11 @@ The exception is when comparing the induced edge clusterings for EGOSPLIT+CAS an
 \end{figure}
 
 A heatmap gives a comprehensive overview of one algorithm, but it can be difficult to quickly compare the algorithms.
-To facilitate a quick comparison, Figure \ref{fig:linegraph_grid} plots all three algorithms on one graph by fixing one of $\xi$ or $\eta$.
+To facilitate a comparison, Figure \ref{fig:linegraph_grid} plots all three algorithms on one graph by fixing one of $\xi$ or $\eta$.
 We find that no one algorithm is always best, but the OSLOM algorithm does perform better for small $\xi$ or small $\eta$.
 \begin{figure}
     \centering
-    \includegraphics[width=0.9\linewidth]{figures/linegraph_grid.pdf}
+    \includegraphics[width=\linewidth]{figures/linegraph_grid.pdf}
     \caption{
         Evaluating the performance of each clustering algorithm with fixed $\eta = 1.5$ (left column) or $\xi = 0.3$ (right column).
     }
@@ -1388,7 +1386,7 @@ In our first experiment (Figure \ref{fig:real_all}), we run each community detec
 None of the algorithms perform well on the DBLP or Amazon graphs, and EGOSPLIT+CAS performs well on Youtube.
 \begin{figure}
     \centering
-    \includegraphics[width=0.8\linewidth]{figures/real_all.pdf}
+    \includegraphics[width=0.5\linewidth]{figures/real_all.pdf}
     \caption{
         Ability of each community detection algorithm to match the full ground truth clustering on real graph datasets.
     }
@@ -1409,7 +1407,7 @@ In this experiment, the EGOSPLIT+CAS algorithm performs the best on all three gr
 The scores are still quite poor (less than 0.25), which means the high scores on the Youtube graph in the previous experiment were due to correctly finding outliers.
 \begin{figure}
     \centering
-    \includegraphics[width=0.8\linewidth]{figures/real_top.pdf}
+    \includegraphics[width=0.5\linewidth]{figures/real_top.pdf}
     \caption{
         Ability of each clustering algorithm to find the top 5000 ground truth communities on real graph datasets.
     }
