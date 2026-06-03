@@ -505,8 +505,9 @@ Toronto Metropolitan University{\ifx\empty\ryethesis@partnerUniv\else{ and
 \newcommand{\ryethesis@insertreferences}{%
 \ifx\emtpy\ryethesis@listofbibfiles
 \else
- \ryethesis@clearpage\bibliography{\ryethesis@listofbibfiles}
+ \ryethesis@clearpage
  \addcontentsline{toc}{chapter}{\bibname}
+ \bibliography{\ryethesis@listofbibfiles}
 \fi
 }
 

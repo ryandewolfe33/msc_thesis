@@ -201,17 +201,17 @@
 
 
 \acknowledgements{
-First and foremost, I would like to thank Dr.~Paweł Prałat for his excellent supervision and encouragement, in both research and collaboration with the network science community. Next, I would like to thank Dr.~François Théberge for introducing me to Paweł and network science research, and Dr.~Bogumił Kamiński for hosting my research visit to SGH Warsaw School of Economics. Finally, I would like to thank Teresa Lee, our Graduate Program Administrator, without whom so many forms would have been so much more difficult.
+First and foremost, I would like to thank Dr.~Paweł Prałat for his excellent supervision and encouragement, for both research and fostering collaboration with the wider network science community. Next, I would like to thank Dr.~François Théberge for introducing me to Paweł and network science research, and Dr.~Bogumił Kamiński for hosting my research visit to SGH Warsaw School of Economics. Finally, I would like to thank Teresa Lee, our Graduate Program Administrator, without whom so many forms would have been so much more difficult.
 }
+
+\renewcommand{\contentsname}{Table of Contents}
+
 
 % Template uses ACM, but I don't like it
 % \bibliographystyle{acm}
 \usepackage{hyperref}
 \bibliographystyle{plainurl}
-
 \addtoreferences{thesis}
-
-\renewcommand{\contentsname}{Table of Contents}
 
 
 \begin{document}
@@ -224,7 +224,7 @@ There have been a variety of attempts to exactly define a community, or score th
 
 The most popular and well studied ideas of community focus on finding a partition \cite{modularity,louvain,lfr}, a clustering where every vertex belongs to exactly one cluster.
 However, especially in graph data, partitions are not always sufficient to describe the intuitive clusters (Figure \ref{fig:overlap_ex}).
-In particular, we extend the notion of a clustering to allow for outliers (vertices may belong to no clusters) and overlaps (vertices may belong to multiple communities).
+In particular, we extend the notion of a clustering to allow for outliers (vertices may belong to no clusters) and overlaps (vertices may belong to multiple clusters).
 There are some community detection algorithms for this regime \cite{oslom,hslc}, but evaluating and comparing these algorithms can be difficult.
 
 \begin{figure}[H]
@@ -239,19 +239,19 @@ An extrinsic benchmark evaluates the ability of a community detection algorithm 
 The first component to an extrinsic benchmark is the data.
 In real networks, the ground truth clustering is often determined from meta-data that is not given to the detection algorithm, but is suspected to produce communities \cite{snap}.
 However, finding the right data for the ground truth clustering is difficult, and it is not always clear that the ground truth communities actually exist in the data \cite{yang2012defining}.
-Thus, we use synthetic data that is generated with a known community structure \cite{lfr,lfro,abcd,abcdo}.
+A solution is to use synthetic data that is generated with a known community structure, and there a a handful of existing models for partitions \cite{lfr,abcd} or including outliers \cite{abcdo}. 
 In Chapter \ref{chap:abcdoo}, we propose \abcdoo, an extension of the Artificial Benchmark for Community Detection with Outliers (\abcdo) model \cite{abcdo,abcd} to allow for overlapping communities. 
-The second component is a method to compare the similarity of the detected clustering to the ground truth clustering.
+The second component for an extrinsic benchmark is a method to compare the similarity of the detected clustering to the ground truth clustering.
 Many methods exist for partitions \cite{ari,vi,nmi,ami}, and some have been extended for overlaps \cite{omega,onmi,ecc}, but, to the best of our knowledge, none have explicitly considered outliers.
-Chapter \ref{chap:fstar} develops a new method based on a set-matching framework \cite{setmatching} and includes an explicit outlier comparison term.
-Finally, Chapter \ref{chap:benchmark} briefly reviews three community detection algorithms and uses the newly developed tools to evaluate their performance.
+Chapter \ref{chap:fstar} develops clustering comparison method that explicitly allows overlaps and outliers based on a set-matching framework \cite{setmatching}.
+Finally, Chapter \ref{chap:benchmark} briefly reviews three community detection algorithms \cite{hslc,cas,oslom} and uses the tools developed in Chapters 2 and 3 to to evaluate their performance.
 
 The bulk of this thesis is based on the following papers:
 \begin{itemize}
     \item ``The Artificial Benchmark for Community Detection with Outliers and Overlapping Communities ({ABCD}+o$^2$)'' \cite{abcdoo_paper} has been accepted for publication in the Journal of Complex Networks. A preliminary version \cite{abcdoo_conference} is published in the Proceedings of the 20th Workshop on Modelling and Mining Networks (WAW2025). The authors contributed equally to the results.
-    \item ``A Pragmatic Method for Comparing Clusterings with Overlaps and Outliers'' \rc{is under review somewhere.} Ryan DeWolfe was the lead author, responsible for the idea, implementation, experiments, and initial draft.
+    \item ``A Pragmatic Method for Comparing Clusterings with Overlaps and Outliers'' was submitted to IEEE Transactions on Knowledge and Data Engineering and is posted to arXiv \cite{f*}. Ryan DeWolfe was the lead author, responsible for the idea, implementation, experiments, and initial draft.
 \end{itemize}
-It also uses community detection algorithms developed during the program and proposed in the following papers:
+Chapter \ref{chap:benchmark} uses community detection algorithms developed during the program and proposed in the following papers:
 \begin{itemize}
     \item ``Improving Community Detection via Community Association Strength Scores'' \cite{cas} is published in the Proceedings of the 20th Workshop on Modelling and Mining Networks (WAW2025). The authors contributed equally to the results.
     \item ``Hierarchical Single-Linkage Clustering for Community Detection with Overlaps and Outliers'' \cite{hslc} is published in the Proceedings of the 14th International Conference on Complex Networks and their Applications (COMPLEX NETWORKS 2025). Ryan DeWolfe is the sole author.
@@ -344,30 +344,28 @@ Note that the ranges for parameters $\gamma$ and $\beta$ are suggestions chosen 
 Furthermore, although power-law distributions are a sensible default option, the implementation allows the user to pass a custom degree or primary community size sequence (defined in phase 1 of section \ref{sec:abcdoo_construction}).
 
 \begin{table}
-\[
-\begin{array}{|l|l|l|}
+\centering
+\begin{tabular}{|c|c|p{0.4\linewidth}|}
 \hline
-\text{Parameter} & \text{Range} & \text{Description}\\
+Parameter & Range & Description\\ \hline
+$n$ & $\N$ & Number of nodes \\
+$s_0$ & $\N$ & Number of outliers \\
+$\eta$ & $[1,\infty)$ & Average number of communities a non-outlier node is part of \\
+$d$ & $\N$ & Dimension of the reference layer \\
+$\rho$ & $[-1,1]$ & Pearson correlation between the degree of nodes and the number of communities they belong to \\
 \hline
-n & \N & \text{Number of nodes} \\
-s_0 & \N & \text{Number of outliers} \\
-\eta & [1,\infty) & \text{Average number of communities a non-outlier node is part of } \\
-d & \N & \text{Dimension of the reference layer} \\
-\rho & [-1,1] & \text{Pearson correlation between the degree of nodes and} \\
-& & \text{the number of communities they belong to} \\
+$\gamma$ & $(2,3)$ & Exponent for power-law degree distribution \\
+$\delta$ & $\N$ & Min degree \\
+$\Delta$ & $\{ \delta, \delta+1, \ldots \}$ & Max degree \\
 \hline
-\gamma & (2,3) & \text{Exponent for power-law degree distribution} \\
-\delta & \N & \text{Min degree} \\
-\Delta & \{ \delta, \delta+1, \ldots \} & \text{Max degree} \\
+$\beta$ & $(1,2)$ & Exponent for power-law community size distribution\\
+$s$ & $\{ \delta+1, \delta+2, \ldots \}$ & Min community size \\
+$S$ & $\{ s, s+1, \ldots \}$ & Max community \\
 \hline
-\beta & (1,2) & \text{Exponent for power-law community size distribution}\\
-s & \{ \delta+1, \delta+2, \ldots \} & \text{Min community size} \\
-S & \{ s, s+1, \ldots \} & \text{Max community} \\
+$\xi$ & $[0,1]$ & Level of noise \\
 \hline
-\xi & [0,1] & \text{Level of noise}\\
-\hline
-\end{array}
-\]
+\end{tabular}
+\medskip
 \caption{Parameters of the \abcdoo\ model.\label{tab:parameters}}
 \end{table}
 
@@ -548,7 +546,7 @@ The parameters for each network are shown in Table~\ref{tab:real_graph_params}.
 
 \begin{table}
     \centering
-    \begin{tabular}{|c|p{0.52\linewidth}|c|c|c|}
+    \begin{tabular}{|c|p{0.4\linewidth}|c|c|c|}
         \hline
          Parameter & Description & DBLP & Amazon & YouTube \\ \hline
          $n$ & Number of nodes & $317{,}080$ & $334{,}863$ & $52{,}675$ \\
@@ -1415,11 +1413,11 @@ However, none of the algorithms are performing very well, and there is lots of r
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Conclusion}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-In this thesis, we developed two tools that when combined, allow for extrinsic benchmarking of community detection algorithms that may have overlaps and outliers.
-First, the \abcdoo\ model provides a synthetic playground that can recreate an overlap structure similar to those seen in real graphs and allows for a smooth increase in detection difficulty.
+This thesis developed two tools the for extrinsic benchmarking of community detection algorithms that may have overlaps and outliers.
+First, the \abcdoo\ model provides a synthetic playground that can recreate an overlap structure that is qualitatively similar to those seen in real graphs and allows for a smooth increase in community detection difficulty.
 Next, we proposed a clustering comparison measure that is well-defined for clustering with overlaps and outliers, and checked that it behaves intuitively.
-Finally, we used these newly developed tools to evaluate three community detection methods.
-We hope these tools encourage further development of community detection algorithms that go beyond partitions of the vertices.
+Finally, we used these newly developed tools to evaluate three community detection methods; no algorithm performed best for all graphs, and there is lots of room for improvement.
+We hope these tools encourage further development of community detection algorithms beyond partitions.
 
 \newpage
 \addcontentsline{toc}{chapter}{Appendices}
