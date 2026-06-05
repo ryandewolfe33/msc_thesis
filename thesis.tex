@@ -239,7 +239,7 @@ An extrinsic benchmark evaluates the ability of a community detection algorithm 
 The first component to an extrinsic benchmark is the data.
 In real networks, the ground truth clustering is often determined from meta-data that is not given to the detection algorithm, but is suspected to produce communities \cite{snap}.
 However, finding the right data for the ground truth clustering is difficult, and it is not always clear that the ground truth communities actually exist in the data \cite{yang2012defining}.
-A solution is to use synthetic data that is generated with a known community structure, and there a a handful of existing models for partitions \cite{lfr,abcd} or including outliers \cite{abcdo}. 
+A~solution is to use synthetic data that is generated with a known community structure, and there a a handful of existing models for partitions \cite{lfr,abcd} or including outliers \cite{abcdo}. 
 In Chapter \ref{chap:abcdoo}, we propose \abcdoo, an extension of the Artificial Benchmark for Community Detection with Outliers (\abcdo) model \cite{abcdo,abcd} to allow for overlapping communities. 
 The second component for an extrinsic benchmark is a method to compare the similarity of the detected clustering to the ground truth clustering.
 Many methods exist for partitions \cite{ari,vi,nmi,ami}, and some have been extended for overlaps \cite{omega,onmi,ecc}, but, to the best of our knowledge, none have explicitly considered outliers.
