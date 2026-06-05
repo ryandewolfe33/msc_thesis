@@ -1054,7 +1054,7 @@ Now, we can prove Theorem~\ref{thm:robust}.
         \item[2a.] $x \not \in O^{(1)}$ and makes a new cluster $\{x\}$ to make clustering $\hcCone$.
         \item[2b.] $x \in O^{(1)}$ and makes a new cluster $\{x\}$ to make clustering $\hcCone$.
     \end{enumerate}
-    Recall that $A = \sum_{C \in \cCone} |C|$ and $B = \sum_{C \in \cCtwo} |C|$.
+    Recall that $A = \sum_{C \in \cCone} |C|$ and $B = \sum_{C \in \cCtwo} |C|$.\\
     Let $\eta^{(2)} = \frac{B}{|X \setminus O^{(2)}|} = \frac{1}{|X \setminus O^{(2)}|} \sum_{C \in \cCtwo} |C|$.
 
     %%%%%%%% Case 1 %%%%%%%%
@@ -1125,8 +1125,8 @@ Now, we can prove Theorem~\ref{thm:robust}.
     \begin{align*}
         & \left| F^*_{wo}(\cCone, \cCtwo) - F^*_{wo}(\hcCone, \cCtwo) \right| \\
         \leq & \frac{1}{|X|}F^*(O^{(1)}, O^{(2)}) + \frac{|O^{(1)}|-1}{|X|}\left|F^*(O^{(1)}, O^{(2)}) - F^*(\hat{O}^{(1)}, O^{(2)})\right| \\
-        & \qquad + \frac{1}{|X|}\hat{F}^*_w(\hcCone, \cCtwo) + \frac{|X \setminus O^{(1)}|}{|X|} \left|\hat{F}^*_w(\cCone, \cCtwo) - \hat{F}^*_w(\hcCone, \cCtwo)\right| \\
-        & \qquad + \frac{|O^{(2)}|}{|X|}\left|F^*(O^{(2)}, O^{(1)}) - F^*(O^{(2)}, \hat{O}^{(1)}) \right| + \frac{|X \setminus O^{(2)}|}{|X|}\left| \hat{F}^*_w(\cCtwo, \cCone) - \hat{F}^*_w(\cCtwo, \hcCone)\right| \\
+        & \quad + \frac{1}{|X|}\hat{F}^*_w(\hcCone, \cCtwo) + \frac{|X \setminus O^{(1)}|}{|X|} \left|\hat{F}^*_w(\cCone, \cCtwo) - \hat{F}^*_w(\hcCone, \cCtwo)\right| \\
+        & \quad + \frac{|O^{(2)}|}{|X|}\left|F^*(O^{(2)}, O^{(1)}) - F^*(O^{(2)}, \hat{O}^{(1)}) \right| + \frac{|X \setminus O^{(2)}|}{|X|}\left| \hat{F}^*_w(\cCtwo, \cCone) - \hat{F}^*_w(\cCtwo, \hcCone)\right| \\
         = & \; \bigO \left( \frac{1}{|X|} \max \left\{ 1, \frac{|X \setminus O^{(2)}| \Gamma}{B} \right\} \right) \\
         = & \; \bigO \left( \frac{1}{|X|} \max \left\{ 1, \frac{\Gamma}{\eta^{(2)}} \right\} \right).
     \end{align*}
@@ -1332,7 +1332,7 @@ Then, the persistence of cluster $C_i$ is given by the equation
 \begin{equation}
     \sigma(C_i) = \sum_{k_j \in C_i} \left(\lambda_{max}(k_j, C_i) - \lambda_{min}(C_i)\right).
 \end{equation}
-The optimal (and returned) flat clustering is the set of clusters $\mathcal{C}$ that maximizes $\sum_{C_i \in \mathcal{C}} \sigma(C_i)$ subject to $C_i \cap C_j = \emptyset \;\forall\; C_i, C_j \in \mathcal{C}$.
+The optimal (and returned) flat clustering is the set of clusters $\mathcal{C}$ that maximizes\\ $\sum_{C_i \in \mathcal{C}} \sigma(C_i)$ subject to $C_i \cap C_j = \emptyset \;\forall\; C_i, C_j \in \mathcal{C}$.
 
 Since we run HSLC on $LG$, it returns a set of edge clusters.
 We project the edge cluster to the vertices by including a vertex in a cluster if it is incident to at least one edge in that cluster (recall Equation \ref{eq:edge_clustering_projection}).
