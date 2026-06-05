@@ -916,16 +916,14 @@ First, we state a few properties that are absolutely required for an intuitive s
 \begin{proposition}
     The proposed measure $F^*_{wo}$ has the following properties.
     \begin{enumerate}
-        \item $F^*_{wo}$ is label invariant.
-        \item $F^*_{wo}(\cCone, \cCtwo) \in [0,1]$, and $F^*_{wo}(\cCone, \cCtwo) = 1$ if and only if $\cCone = \cCtwo$.
+        \item $F^*_{wo}(\cCone, \cCtwo) \in [0,1]$
+        \item $F^*_{wo}(\cCone, \cCtwo) = 1$ if and only if $\cCone = \cCtwo$.
         \item $F^*_{wo}$ is symmetric.
         \item Single object clusters are not the same as outliers.
     \end{enumerate}
 \end{proposition}
 
-The first property is the essential difference between clustering and multi-class classification tasks.
-Implementations generally assign a label to each cluster (often using the natural numbers $1$ to $|\cC|$), but such a labelling is arbitrary and should not affect the similarity to another clustering.
-The second property is called \textit{normalization}~\cite{ami}, and it is defined as a bounded range for the measure independent of the particular clusterings under consideration.
+The first property is called \textit{normalization}~\cite{ami}, and it is defined as a bounded range for the measure independent of the particular clusterings under consideration.
 A normalized measure means that the output is on the same scale regardless of the clusterings, and scores are comparable even if the clusterings have a different number of clusters or objects.
 The final property is the key differentiation of our method with those presented in Section~\ref{sec:related}, in the sense that the obvious extensions of the existing methods would treat outliers identically to single object clusters.
 
