@@ -958,21 +958,20 @@ Since none of the clusterings used in the proof of Proposition~\ref{prop:metric}
 Finally, we examine the effect of a small change to one of the clusterings being compared.
 \begin{theorem}\label{thm:robust}
     Let $\cCone$ and $\cCtwo$ be clusterings of $X$, and let $\tcCone$ be a clustering created from $\cCone$ by moving one object, $x$, into or out of one cluster.
-    Let $B = \sum_{C \in \cCtwo} |C|$.
+    Let $\eta^{(2)} = \frac{1}{|X \setminus O^{(2)}|} \sum_{C \in \cCtwo} |C|$, the average number of clusters a non-outlier object is in for $\cCtwo$.
     If $|\cCone| = |\tcCone|$ (no clusters were created or destroyed), say $x$ was added or removed from $C_1 \in \cCone$, then
-    \begin{align*}
-    &\left| F^*_{wo}(\cCone, \cCtwo) - F^*_{wo}(\tcCone, \cCtwo) \right|\\
-    &\qquad = \bigO \left( \frac{1}{|X|} \max \left\{ 1, \frac{|X \setminus O^{(2)}| \gamma}{B} \right\} \right),
-    \end{align*}
+    \begin{equation*}
+        \Big| F^*_{wo}(\cCone, \cCtwo) - F^*_{wo}(\tcCone, \cCtwo)\Big| = \bigO \Big( \frac{1}{|X|} \max \Big\{ 1, \frac{\gamma}{\eta^{(2)}} \Big\} \Big),
+    \end{equation*}
     where $\gamma = |\{C \in \cCtwo : C \text{ matched with } C_1 \text{ or } x \in C\}|$. 
     Otherwise, 
     \begin{equation*}
-            \left| F^*_{wo}(\cCone, \cCtwo) - F^*_{wo}(\tcCone, \cCtwo) \right| = \bigO \left( \frac{1}{|X|} \max \left\{ 1, \frac{|X \setminus O^{(2)}| \Gamma}{B} \right\} \right),
+        \Big| F^*_{wo}(\cCone, \cCtwo) - F^*_{wo}(\tcCone, \cCtwo) \Big| = \bigO \Big( \frac{1}{|X|} \max \Big\{ 1, \frac{\Gamma}{\eta^{(2)}} \Big\} \Big),
     \end{equation*}
     where $\Gamma = |\{C \in \cCtwo : x \in C\}|$.
 \end{theorem}
 With Theorem~\ref{thm:robust}, we confirm that, subject to some mild constraints on the clusterings, moving one element into or out of a cluster has only a small effect on the similarity to a reference clustering.
-In both cases, the right-hand side can be improved to $\bigO(\frac{1}{|X|})$ with additional mild constraints on $\cCtwo$ that prevent an object from being in too many clusters.
+In both cases, the right-hand side can be improved to $\bigO(\frac{1}{|X|})$ with additional constraints on $\cCtwo$ that prevent an object from being in too many clusters.
 
 First, we prove a few lemmas about some of the intermediate scores, and we will then combine these results to prove Theorem \ref{thm:robust}.
 For rest of the section, let $\cCone$ and $\cCtwo$ be clusterings of $X$. 
@@ -994,7 +993,7 @@ This corresponds to the first scenario in Theorem \ref{thm:robust}.
     \begin{equation*}
         \left|F^*(C_1, C_j) - F^*(\tilde{C}, C_j)\right| = \left| \frac{|C_1 \cap C_j|}{|C_1 \cup C_j|} - \frac{|\tilde{C}  \cap C_j|}{|\tilde{C} \cup C_j|} \right| = \frac{|C_1 \cap C_j|}{|C_1 \cup C_j| \cdot |\tilde{C} \cup C_j|} \leq \frac{1}{|\tilde{C} \cup C_j|}.
     \end{equation*}
-    In either case, $|C_1|, |C_j| \leq |C_1 \cup C_j| \leq |\tilde{C} \cup C_j|$ so $1 / |\tilde{C} \cup C_j| \leq 1 / |C_1 \cup C_j| \leq 1/ |C_1|, 1 / |C_j|$. 
+    In either case, $|C_1| \leq |C_1 \cup C_j| \leq |\tilde{C} \cup C_j|$ so $1 / |\tilde{C} \cup C_j| \leq 1 / |C_1 \cup C_j| \leq 1/ |C_1|$ or $|C_j| \leq |C_1 \cup C_j| \leq |\tilde{C} \cup C_j|$ so $1 / |\tilde{C} \cup C_j| \leq 1 / |C_1 \cup C_j| \leq 1/ |C_j|$.
 \end{proof}
 
 \begin{lemma}\label{lem:two}
@@ -1056,6 +1055,7 @@ Now, we can prove Theorem~\ref{thm:robust}.
         \item[2b.] $x \in O^{(1)}$ and makes a new cluster $\{x\}$ to make clustering $\hcCone$.
     \end{enumerate}
     Recall that $A = \sum_{C \in \cCone} |C|$ and $B = \sum_{C \in \cCtwo} |C|$.
+    Let $\eta^{(2)} = \frac{B}{|X \setminus O^{(2)}|} = \frac{1}{|X \setminus O^{(2)}|} \sum_{C \in \cCtwo} |C|$.
 
     %%%%%%%% Case 1 %%%%%%%%
     \textbf{Case 1a}:
@@ -1063,12 +1063,13 @@ Now, we can prove Theorem~\ref{thm:robust}.
         & \left| F^*_{wo}(\cCone, \cCtwo) - F^*_{wo}(\tcCone, \cCtwo) \right| \\
         = & \left| 0.5 \left( \frac{|X \setminus O^{(1)}|}{|X|} \right) \hat{F}^*_w(\cCone, \cCtwo) + 0.5 \left( \frac{| X \setminus O^{(2)}|}{|X|} \right) \hat{F}^*_w(\cCtwo, \cCone) \right. \\
         & \left. \qquad \qquad - 0.5 \left( \frac{|X \setminus O^{(1)}|}{|X|} \right) \hat{F}^*_w(\tcCone, \cCtwo) - 0.5 \left( \frac{|X \setminus O^{(2)}|}{|X|} \right) \hat{F}^*_w(\cCtwo, \tcCone) \right| \\
-        \leq & \frac{|X \setminus O^{(1)}|}{|X|} \frac{1}{A} + \frac{|X \setminus O^{(2)}|}{|X|} \frac{ \gamma }{B},
+        \leq & \frac{|X \setminus O^{(1)}|}{|X|} \frac{1}{A} + \frac{|X \setminus O^{(2)}|}{|X|} \frac{ \gamma }{B} \\
+        \leq & \frac{|X \setminus O^{(1)}|}{|X|} \frac{1}{A} + \frac{1}{|X|} \frac{ \gamma }{\eta^{(2)}},
     \end{align*}
     by Lemmas~\ref{lem:two} and~\ref{lem:three}.
     And, since $|X \setminus O^{(1)}| \leq A$, we conclude that
     \begin{equation*}
-        \left| F^*_{wo}(\cCone, \cCtwo) - F^*_{wo}(\tcCone, \cCtwo) \right| \leq \bigO \left( \frac{1}{|X|} \max \left\{ 1, \frac{|X \setminus O^{(2)}| \gamma }{B} \right\} \right).
+        \left| F^*_{wo}(\cCone, \cCtwo) - F^*_{wo}(\tcCone, \cCtwo) \right| \leq \bigO \left( \frac{1}{|X|} \max \left\{ 1, \frac{\gamma }{\eta^{(2)}} \right\} \right).
     \end{equation*}
 
     \textbf{Case 1b}:
@@ -1085,11 +1086,12 @@ Now, we can prove Theorem~\ref{thm:robust}.
     \begin{align*}
         & \left| \hat{F}^*_{wo}(\cCtwo, \cCone) - \hat{F}^*_{wo}(\cCtwo, \tcCone) \right| \\
         \leq & \frac{|O^{(2)}|}{|X|}\left| F^*(O^{(2)}, O^{(1)}) - F^*(O^{(2)}, \tilde{O}^{(1)})\right| + \frac{|X \setminus O^{(2)}|}{|X|}\left| \hat{F}^*_w(\cCtwo, \cCone) - \hat{F}^*_w(\cCtwo, \tcCone)\right|\\
-        = & \; \bigO \left( \frac{1}{|X|} \frac{|X \setminus O^{(2)}| \gamma}{B}\right).
+        = & \; \bigO \left( \frac{1}{|X|} \frac{|X \setminus O^{(2)}| \gamma}{B}\right) \\
+        = & \; \bigO \left( \frac{1}{|X|} \frac{\gamma}{\eta^{(2)}}\right).
     \end{align*}
     So together,
     \begin{equation*}
-        \left| F^*_{wo}(\cCone, \cCtwo) - F^*_{wo}(\tcCone, \cCtwo) \right| = \bigO \left( \frac{1}{|X|} \max \left\{ 1, \frac{|X \setminus O^{(2)}| \gamma}{B} \right\} \right).
+        \left| F^*_{wo}(\cCone, \cCtwo) - F^*_{wo}(\tcCone, \cCtwo) \right| = \bigO \left( \frac{1}{|X|} \max \left\{ 1, \frac{\gamma}{\eta^{(2)}} \right\} \right).
     \end{equation*}
 
     \textbf{Preliminaries for Case 2a and 2b}:
@@ -1115,7 +1117,8 @@ Now, we can prove Theorem~\ref{thm:robust}.
     \begin{align*}
         & \left| F^*_{wo}(\cCone, \cCtwo) - F^*_{wo}(\hcCone, \cCtwo) \right| \\
         \leq & \frac{|X \setminus O^{(1)}|}{|X|}\left|\hat{F}^*_{w}(\cCone, \cCtwo) - \hat{F}^*_{w}(\hcCone, \cCtwo) \right| + \frac{|X \setminus O^{(2)}|}{|X|} \left| \hat{F}^*_w(\cCtwo, \cCone) - \hat{F}^*_w(\cCtwo, \hcCone) \right| \\
-        = & \bigO \left( \frac{1}{|X|} \max \left\{ 1, \frac{|X \setminus O^{(2)}| \Gamma }{B} \right\} \right).
+        = & \bigO \left( \frac{1}{|X|} \max \left\{ 1, \frac{|X \setminus O^{(2)}| \Gamma }{B} \right\} \right) \\
+        = & \bigO \left( \frac{1}{|X|} \max \left\{ 1, \frac{\Gamma }{\eta^{(2)}} \right\} \right).
     \end{align*}
 
     \textbf{Case 2b}:
@@ -1124,7 +1127,8 @@ Now, we can prove Theorem~\ref{thm:robust}.
         \leq & \frac{1}{|X|}F^*(O^{(1)}, O^{(2)}) + \frac{|O^{(1)}|-1}{|X|}\left|F^*(O^{(1)}, O^{(2)}) - F^*(\hat{O}^{(1)}, O^{(2)})\right| \\
         & \qquad + \frac{1}{|X|}\hat{F}^*_w(\hcCone, \cCtwo) + \frac{|X \setminus O^{(1)}|}{|X|} \left|\hat{F}^*_w(\cCone, \cCtwo) - \hat{F}^*_w(\hcCone, \cCtwo)\right| \\
         & \qquad + \frac{|O^{(2)}|}{|X|}\left|F^*(O^{(2)}, O^{(1)}) - F^*(O^{(2)}, \hat{O}^{(1)}) \right| + \frac{|X \setminus O^{(2)}|}{|X|}\left| \hat{F}^*_w(\cCtwo, \cCone) - \hat{F}^*_w(\cCtwo, \hcCone)\right| \\
-        = & \; \bigO \left( \frac{1}{|X|} \max \left\{ 1, \frac{|X \setminus O^{(2)}| \Gamma}{B} \right\} \right).
+        = & \; \bigO \left( \frac{1}{|X|} \max \left\{ 1, \frac{|X \setminus O^{(2)}| \Gamma}{B} \right\} \right) \\
+        = & \; \bigO \left( \frac{1}{|X|} \max \left\{ 1, \frac{\Gamma}{\eta^{(2)}} \right\} \right).
     \end{align*}
 \end{proof}
 
