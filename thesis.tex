@@ -194,7 +194,7 @@
 \abstract{
     Clustering, or community detection, is one of the fundamental problems in unsupervised machine learning.
     For graph data, community detection algorithms look for subsets of vertices that are densely connected internally while sparsely connected externally.
-    The most popular community detection algorithms insist each vertex belong to exactly one community, although recent extensions allow for overlaps (vertices belonging to multiple communities) and outliers (vertices belonging to no communities).
+    The most popular community detection algorithms insist that each vertex belong to exactly one community, although recent extensions allow for overlaps (vertices belonging to multiple communities) and outliers (vertices belonging to no communities).
     This thesis develops tools for extrinsic benchmarking of community detection algorithms that allow overlaps and outliers: first we propose an extension of the Artificial Benchmark for Community Detection to create synthetic graphs with known community structure, then we propose a clustering similarity measure that explicitly handles overlaps and outliers.
     We conclude with an example of using the new tools to compare several community detection methods, and open the way for measuring further improvements.
 }
@@ -274,7 +274,7 @@ A model similar to \lfr, the Artificial Benchmark for Community Detection (\abcd
 
 Undirected variants of \lfr\ and \abcd\ produce graphs with comparable properties, but \abcd\ is faster than \lfr\ and can be easily tuned to allow the user to make a smooth transition between the two extremes: pure (disjoint) communities and a random graph with no community structure.
 Moreover, \abcd\ is easier to analyze theoretically \cite{abcdmodularity,abcdselfsimilarity}.
-The \abcd\ model has been generalized to include outliers (\abcdo)~\cite{abcdo} and separately generalized to generate hypergraphs~\cite{habcd}.
+The \abcd\ model has been several generalizations that generate outliers (\abcdo)~\cite{abcdo}, hypergraphs~\cite{habcd}, or multilayer networks \cite{mabcd}.
 Accordingly, the \abcd\ model is gaining recognition as a benchmark for community detection algorithms.
 For example, in~\cite{bayan}, the authors use both \abcd\ and \lfr\ graphs to compare 30 community detection algorithms and highlight that \emph{``being directly comparable to \lfr, \abcd\ offers additional benefits, including higher scalability and better control for adjusting an analogous mixing parameter.''}
 
@@ -371,7 +371,7 @@ $\xi$ & $[0,1]$ & Level of noise \\
 
 \subsection{The Generation Algorithm}\label{sec:abcdoo_construction}
 
-\subsubsection*{Phase 1: assigning communities.}
+\subsubsection*{Phase 1: Assigning Communities}
 This phase is the essential contribution of the \abcdoo\ extension. 
 We label the nodes $v_1, \dots, v_n$ such that nodes $v_{\hat{n}+1}, \dots, v_n$ are the outliers, with $\hat{n} = n - s_0$.
 
@@ -415,7 +415,8 @@ We call the nodes in $C_j - \hat{C}_j$ the \textit{secondary} members of communi
 We now have each $v_1, \dots v_{\hat{n}}$ assigned to exactly one primary community and possibly some secondary communities.
 In Figure \ref{fig:communities} we show an example of the reference layer with $\hat{n} = 150$ and show the construction of $C_3$, with $\hat{s}_3 = 40$ and $\eta = 1.75$.
 From a computational perspective, to ensure that finding primary and secondary communities is efficient, we use k-d trees to perform spatial lookups~\cite{bentley1975kdtrees}.
-\begin{figure}[H]
+
+\begin{figure}
     \centering
     \includegraphics[width=0.38\linewidth]{figures/fig2a.pdf}
     \includegraphics[width=0.38\linewidth]{figures/fig2b.pdf}\\
@@ -424,7 +425,7 @@ From a computational perspective, to ensure that finding primary and secondary c
     \label{fig:communities}
 \end{figure}
 
-\subsubsection*{Phase 2: assigning degrees.}
+\subsubsection*{Phase 2: Assigning Degrees}
 By default, we sample the degree sequence $(d_i, i \in [n])$ independently from $\tpl{\gamma}{\delta}{\Delta}$.
 Since the total degree in a simple graph must be even, if $\sum_{i \in [n]} d_i$ is odd, we decrease a maximal $d_i$ by $1$.
 Alternatively, the degree sequence can be given explicitly as an input.
@@ -478,7 +479,7 @@ We find an appropriate value for $\alpha$ with a binary search, starting with $\
 In some cases it is impossible to reach the correlation level required by the user, in which case the closest possible correlation is produced.
 The relationship (beyond monotone) between $\rho$ and $\alpha$ is unclear, but we feel it is easier for a user to reason about a desired $\rho$.
 
-\subsubsection*{Phase 3: generating graphs.}
+\subsubsection*{Phase 3: Generating Graphs}
 First, we split each degree into the community degrees and the background degree.
 For each non-outlier node $v_i$ with degree $d_i$, define random variables $Y_i = \round{(1-\xi) d_i}$ and $Z_i = d_i - Y_i$ (note that $[Y_i] = (1-\xi) d_i$ and $\E[Z_i] = \xi d_i$) and split the degree $d_i$ into $Y_i$ community degree and $Z_i$ background degree.
 The community degree is further split as evenly as possible into the $\eta_i$ communities of $v_i$.
@@ -491,7 +492,7 @@ From the previous paragraph, each $v_i \in C_j$ has some degree allocated to com
 In the event that the sum of degrees in a community is odd, we pick a node with maximum degree in this community, decrease the community degree by one, and add one to the background degree.
 Finally, we construct the \textit{background graph} $G_{n,0}$ as per the configuration model on node set $[n]$ and degree sequence $(Z_i,i \in [n])$.
 
-\subsubsection*{Phase 4: rewiring self-loops and multi-edges.}
+\subsubsection*{Phase 4: Rewiring Self-Loops and Multi-Edges}
 Note that, although we are calling $G_{n,0},G_{n,1},\dots,G_{n,L}$ \textit{graphs}, they are in fact \textit{multi-graphs}.
 To ensure that $G_n$ is simple, we perform a series of \textit{rewirings}.
 A rewiring takes two edges as input, splits them into four half-edges, and creates two new edges distinct from the input.
@@ -586,14 +587,13 @@ A small adjustment is made to ensure that the number of half-edges in both parts
 The nodes are matched with the communities based on the bipartite configuration model.
 Thus, each community is populated with nodes, and each node is assigned to some number of communities. 
 
-\subsubsection*{Community sizes.}
-
+\subsubsection*{Community sizes}
 In the first experiment (see Figure~\ref{fig:com-size}), we compare the distributions of community sizes.
 Of course, since both \abcdoo\ and CBK sample community sizes directly from the specified distribution, it is unsurprising that the empirical distributions are near-perfect fits when accounting for the imposed minimum community size of $10$.
 Thus, this first experiment merely acts as a sanity check ensuring that the \abcdoo\ and CBK models generate community sizes correctly.
 Moreover, this experiment verifies that the distributions coming from the real networks are indeed power-law.
 
-\begin{figure}[H]
+\begin{figure}[t]
     \centering
     \includegraphics[width=0.48\linewidth]{figures/dblp_com_size.pdf}\hfill
     \includegraphics[width=0.48\linewidth]{figures/amazon_com_size.pdf}\\
@@ -605,14 +605,14 @@ Moreover, this experiment verifies that the distributions coming from the real n
     \label{fig:com-size}
 \end{figure}
 
-\subsubsection*{Number of communities per node.}
+\subsubsection*{Number of communities per node}
 Results are presented in Figure~\ref{fig:coms-per-node}.
 In contrast with the previous experiment, there is less agreement between the two models and the real distributions.
 In the case of the YouTube and DBLP networks, the power-law distribution generated by the CBK model is a good fit for the empirical distribution, whereas the Amazon distribution does not appear to be power-law.
 In contrast, the \abcdoo\ model is able to produce a distribution similar to each of the three networks with a properly tuned dimension parameter $d$; for the Amazon graph a low dimensional reference layer captures the behaviour well, and for the DBLP and YouTube graphs a high dimensional reference layer captures the behaviour well.
 The flexibility and realistic distributions are even more encouraging when we recall that the distribution is not given to the \abcdoo model, and is instead a natural feature of the hidden reference layer. 
 
-\begin{figure}[H]
+\begin{figure}[t]
     \centering
     \includegraphics[width=0.48\linewidth]{figures/dblp_coms_per_node.pdf}\hfill
     \includegraphics[width=0.48\linewidth]{figures/amazon_coms_per_node.pdf}\\
@@ -624,7 +624,7 @@ The flexibility and realistic distributions are even more encouraging when we re
     \label{fig:coms-per-node}
 \end{figure}
 
-\subsubsection*{Community intersection sizes.}
+\subsubsection*{Community intersection sizes}
 Results are presented in Figure~\ref{fig:com-overlap}.
 We examine the size of the overlaps produced by each model.
 Neither the \abcdoo\ model nor the CBK model specifies a particular distribution, but we can see the \abcdoo\ model, with a well-tuned dimension parameter, is able to create a similar distribution to the real graph.
@@ -632,7 +632,7 @@ In contrast, the CBK model does not fit the Amazon and YouTube graphs well.
 Specifically, the CBK model produces too many small intersections and, moreover, the largest intersection is several orders of magnitude too small.
 We consider this experiment strong evidence for using a reference layer as the default option for generating overlapping communities.
 
-\begin{figure}[H]
+\begin{figure}[p]
     \centering
     \includegraphics[width=\linewidth]{figures/overlap.pdf}
     \caption{
@@ -647,7 +647,7 @@ We consider this experiment strong evidence for using a reference layer as the d
 
 We now turn to properties of the \abcdoo\ model beyond those governed by the hidden reference layer.
 
-\subsubsection*{Degree vs.\ number of communities.}
+\subsubsection*{Degree vs.\ Number of Communities}
 
 The \abcdoo\ model attempts to produce a correlation $\rho$ between the degree of a node and the number of communities it belongs to.
 In Table~\ref{tab:rho} we report the desired correlation $\rho$ for each of the networks, as well as the achieved correlation for the \abcdoo\ graphs.
@@ -672,14 +672,14 @@ The maximum achievable correlation increases with the dimension as there are mor
     \label{tab:rho}
 \end{table}
 
-\subsubsection*{Density of intersections}
+\subsubsection*{Density of Intersections}
 \label{subsec:rho}
 One consequence of forcing nodes of large degree into community intersections is that those intersections will be denser than the individual communities.
 We show this phenomenon in Figure~\ref{fig:intersection density vs rho} by comparing the community and intersection densities for various $\rho$ while fixing the other parameters.
 Note that, given communities $C_j$ and $C_k$ with $s_j \gg s_k$, the density of $C_k$ is almost always larger than that of $C_j$ since both community graphs are sparse (at most a $1-\xi$ fraction of each node's degree is delegated to one of its communities).
 Figures for the other graphs and dimensions can be found in Appendix~\ref{a:intersection_density}.
 
-\begin{figure}[H]
+\begin{figure}[t]
     \centering
     \includegraphics[width=0.48\linewidth]{figures/youtube_rho_vs_overlap_density_d8.pdf}
     \includegraphics[width=0.48\linewidth]{figures/dblp_rho_vs_overlap_density_d8.pdf}
@@ -702,7 +702,7 @@ Moreover, we see that a low-dimensional reference layer yields a better approxim
 In the case of DBLP, the difference in distribution between dimensions is partially attributable to the difference in the empirical $\rho$ (recall with Table~\ref{tab:rho} that the low dimension graphs could not achieve a large correlation.
 Note that the most similar dimension for each real graph is consistent with the experiment presented in Figure~\ref{fig:coms-per-node}.
 
-\begin{figure}[H]
+\begin{figure}[t]
     \centering
     \includegraphics[width=0.48\linewidth]{figures/dblp_overlap_density.pdf}\hfill
     \includegraphics[width=0.48\linewidth]{figures/amazon_overlap_density.pdf}\\
@@ -715,7 +715,7 @@ Note that the most similar dimension for each real graph is consistent with the 
     \label{fig:dblp-overlaps}
 \end{figure}
 
-\subsubsection*{Internal edge fraction}
+\subsubsection*{Internal Edge Fraction}
 \label{subsec:ief}
 Finally, we analyze how strongly nodes are connected to their communities.
 There are many measures for community association strength, some of which we recently analyzed in~\cite{cas}.
@@ -734,7 +734,7 @@ Furthermore, despite the \abcdoo\ model splitting the community degree of a node
 Thus, we see a pattern in \abcdoo\ graphs where there are $\ell$ large but unequal internal edge fraction values.
 This feature is also present in the DBLP graph, the other real graphs, and the other \abcdoo\ graphs (see Appendix~\ref{a:ief} for a complete collection of figures).
 
-\begin{figure}[H]
+\begin{figure}[t]
     \centering
     \includegraphics[width=0.48\linewidth]{figures/dblp_ief.pdf}
     \hfill
@@ -1206,7 +1206,7 @@ However, as could be the case when evaluating a linkage based edge clustering al
 To remedy this, we can define the closure of an edge clustering $\bar{\cE}_G$ to add these internal edges back to the edge cluster, which can be computed as $\bar{\cE}_G = \cE_G(\cC_G(\cE))$.
 When using a graph-aware measure for comparing an edge clustering algorithm to a ground truth vertex clustering, we recommend using the closed edge clustering since the internal edges will be included in the edge clustering induced by the ground truth.
 
-\begin{figure}[!t]
+\begin{figure}[t]
     \centering
     \includegraphics[width=0.8\linewidth]{figures/fig3.pdf}
     \caption{
