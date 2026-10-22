@@ -278,7 +278,7 @@ The \abcd\ model has several generalizations that generate outliers (\abcdo)~\ci
 Accordingly, the \abcd\ model is gaining recognition as a benchmark for community detection algorithms.
 For example, in~\cite{bayan}, the authors use both \abcd\ and \lfr\ graphs to compare 30 community detection algorithms and highlight that \emph{``being directly comparable to \lfr, \abcd\ offers additional benefits, including higher scalability and better control for adjusting an analogous mixing parameter.''}
 
-This chapter introduces the \abcdoo\ model: a further generalization of the \abcdo\ model that allows for outliers and overlapping communities.
+This chapter introduces the \abcdoo\ model, a generalization of the \abcdo\ model that allows for outliers and overlapping communities.
 The \lfr\ model has been similarly extended \cite{lfro}, but in their model the nodes are assigned to communities based on the construction of a random bipartite graph between nodes and communities resulting in a small amount of overlap between almost every pair of communities and rarely any pair of communities with a large overlap (for more details, see Section \ref{sec:effects_of_reference_layer}).
 In \abcdoo, we instead generate overlapping communities based on a hidden, low-dimensional geometric layer which tends to yield fewer and larger overlaps.
 This geometric approach to community structure is heuristically justified since latent geometric spaces are believed to shape complex networks~\cite{boguna2021network,serrano2021shortest} (e.g., social media networks shaped by users' opinions, education, knowledge, interests, etc.).
@@ -1340,7 +1340,7 @@ We project the edge cluster to the vertices by including a vertex in a cluster i
 \subsection{OSLOM}
 The Order Statistics Local Optimization Method (OSLOM) clustering algorithm \cite{oslom} is a complicated method that uses a statistical significance \cite{communitysignificance} based CAS score to create a local clustering \cite{localclustering} algorithm.
 Their CAS score is derived from the probability that a vertex not in a community would have at least the same number of connections to the community if the graph was rewired following the configuration model.
-This score is used to develop a local clustering algorithm that finds an optimially significant community containing a given seed vertex.
+This score is used to develop a local clustering algorithm that finds an optimally significant community containing a given seed vertex.
 Many such communities are detected and combined or removed (if they overlap too much) according to several significance tests and preset thresholds.
 We refer to \cite{oslom} for a detailed explanation of the algorithm and motivations, and \cite{oslomcode} for the code used in the following experiments.
 
@@ -1349,7 +1349,7 @@ For a comprehensive benchmark where we trust the ground truth, we use a large co
 We vary $\xi \in [0.2, 0.6]$ and $\eta \in [1,3]$, and fix $n=10000, s_0=1000, \delta=5, \Delta=1000, \gamma=2.5, s=25, S=1000, \beta=1.5, d=8$, and $\rho=0.25$.
 For each set of parameters, we generate $10$ sample graphs and report the mean $F^*_{wo}$ of the detected clustering compared to the ground truth.
 
-Figure \ref{fig:heatmap_grid} shows the performance of each algorithm as a heatmap.
+Figure \ref{fig:heatmap_grid} shows the performance of each algorithm as a heat map.
 As expected, each algorithm performs quite well when both $\xi$ and $\eta$ are small (especially when there is no overlap), but performance tends to decrease as either parameter increases.
 The exception is when comparing the induced edge clusterings for EGOSPLIT+CAS and OSLOM, in which case the performance tends to increase as $\xi$ increases, indicating these algorithms find small clusters or lots of outliers.
 \begin{figure}
@@ -1361,7 +1361,7 @@ The exception is when comparing the induced edge clusterings for EGOSPLIT+CAS an
     \label{fig:heatmap_grid}
 \end{figure}
 
-A heatmap gives a comprehensive overview of one algorithm, but it can be difficult to quickly compare the algorithms.
+A heat map gives a comprehensive overview of one algorithm, but it can be difficult to quickly compare the algorithms.
 To facilitate a comparison, Figure \ref{fig:linegraph_grid} plots all three algorithms on one graph by fixing one of $\xi$ or $\eta$.
 We find that no one algorithm is always best, but the OSLOM algorithm does perform better for small $\xi$ or small $\eta$.
 \begin{figure}
